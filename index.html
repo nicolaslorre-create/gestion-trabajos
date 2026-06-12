@@ -281,14 +281,14 @@ tbody tr:last-child td{border-bottom:none}
       <div>
         <label>Procesos</label>
         <div class="proc-grid" id="proc-grid">
-          <label class="proc-chip"><input type="checkbox" value="DTF"><i class="ti ti-printer" style="font-size:12px"></i> DTF</label>
-          <label class="proc-chip"><input type="checkbox" value="Grabado"><i class="ti ti-pencil" style="font-size:12px"></i> Grabado</label>
-          <label class="proc-chip"><input type="checkbox" value="NOVOCORTE"><i class="ti ti-cut" style="font-size:12px"></i> NOVOCORTE</label>
-          <label class="proc-chip"><input type="checkbox" value="MH"><i class="ti ti-layers" style="font-size:12px"></i> MH</label>
-          <label class="proc-chip"><input type="checkbox" value="BLACK"><i class="ti ti-moon" style="font-size:12px"></i> BLACK</label>
-          <label class="proc-chip"><input type="checkbox" value="IMARNE"><i class="ti ti-tools" style="font-size:12px"></i> IMARNE</label>
-          <label class="proc-chip"><input type="checkbox" value="GRAFIKARTE"><i class="ti ti-palette" style="font-size:12px"></i> GRAFIKARTE</label>
-          <label class="proc-chip"><input type="checkbox" value="DARDO"><i class="ti ti-target" style="font-size:12px"></i> DARDO</label>
+          <div class="proc-chip" data-value="DTF" onclick="toggleProc(this)"><i class="ti ti-printer" style="font-size:12px"></i> DTF</div>
+          <div class="proc-chip" data-value="Grabado" onclick="toggleProc(this)"><i class="ti ti-pencil" style="font-size:12px"></i> Grabado</div>
+          <div class="proc-chip" data-value="NOVOCORTE" onclick="toggleProc(this)"><i class="ti ti-cut" style="font-size:12px"></i> NOVOCORTE</div>
+          <div class="proc-chip" data-value="MH" onclick="toggleProc(this)"><i class="ti ti-layers" style="font-size:12px"></i> MH</div>
+          <div class="proc-chip" data-value="BLACK" onclick="toggleProc(this)"><i class="ti ti-moon" style="font-size:12px"></i> BLACK</div>
+          <div class="proc-chip" data-value="IMARNE" onclick="toggleProc(this)"><i class="ti ti-tools" style="font-size:12px"></i> IMARNE</div>
+          <div class="proc-chip" data-value="GRAFIKARTE" onclick="toggleProc(this)"><i class="ti ti-palette" style="font-size:12px"></i> GRAFIKARTE</div>
+          <div class="proc-chip" data-value="DARDO" onclick="toggleProc(this)"><i class="ti ti-target" style="font-size:12px"></i> DARDO</div>
         </div>
       </div>
       <div><label>Cantidad</label><input type="number" id="f-qty" value="1" min="1" oninput="calcTotal()"></div>
@@ -357,15 +357,9 @@ function inPeriodo(iso){
 }
 
 // ── PROCESOS CHIPS ────────────────────────────────────
-document.querySelectorAll('.proc-chip').forEach(chip=>{
-  chip.addEventListener('click',()=>chip.classList.toggle('selected'));
-});
-function getProcesos(){
-  return [...document.querySelectorAll('.proc-chip.selected')].map(c=>c.querySelector('input').value);
-}
-function resetProcesos(){
-  document.querySelectorAll('.proc-chip').forEach(c=>c.classList.remove('selected'));
-}
+function toggleProc(el){ el.classList.toggle('selected'); }
+function getProcesos(){ return [...document.querySelectorAll('.proc-chip.selected')].map(c=>c.dataset.value); }
+function resetProcesos(){ document.querySelectorAll('.proc-chip').forEach(c=>c.classList.remove('selected')); }
 
 // ── DATOS ─────────────────────────────────────────────
 async function cargarTodo(){
