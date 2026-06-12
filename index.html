@@ -364,8 +364,10 @@ function renderTabla(){
     if(!rows.length) return;
     html+=`<tr class="sec-row ${g.secCls}"><td colspan="9"><span class="sec-dot ${g.dotCls}"></span>${g.label}<span class="sec-count ${g.cntCls}">${rows.length}</span></td></tr>`;
     rows.forEach(t=>{
-      const chk=g.chkCls?`<div class="chk ${g.chkCls}"><i class="ti ti-check" style="font-size:9px"></i></div>`:`<div class="chk"></div>`;
-      const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
+const chkClick = t.estado==='pendiente' ? `onclick="cambiarEstado('${t.id}','completado')"` : '';
+      const chk=g.chkCls
+        ?`<div class="chk ${g.chkCls}"><i class="ti ti-check" style="font-size:9px"></i></div>`
+        :`<div class="chk" ${chkClick} style="${t.estado==='pendiente'?'cursor:pointer':''}" title="${t.estado==='pendiente'?'Marcar completado':''}"></div>`;      const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
       const cliente=t.clientes?.nombre||'—';
       html+=`<tr class="${g.rowCls}">
         <td>${chk}</td>
