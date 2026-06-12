@@ -85,15 +85,25 @@ tbody tr:last-child td{border-bottom:none}
 .pill-pend{background:#FFE8D5;color:var(--ort)}.pill-comp{background:#D5EEC5;color:var(--gnt)}.pill-cerr{background:#FDEBD5;color:var(--cst)}
 .saldo-pos{color:var(--cst);font-weight:600}.saldo-zero{color:var(--tx3)}
 .mono{font-family:'DM Mono',monospace;font-size:12px}
-.act-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--bd);background:transparent;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--tx2);cursor:pointer}
+.act-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--bd);background:transparent;display:inline-flex;align-items:center;justify-content:center;font-size:14px;color:var(--tx2);cursor:pointer;position:relative}
 .act-btn:hover{background:var(--s2)}
 .sec-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:7px;vertical-align:middle}
 .dot-pend{background:var(--or)}.dot-comp{background:var(--gn)}.dot-cerrs{background:var(--cs)}.dot-cerrn{background:var(--cn)}
 .sec-count{display:inline-flex;align-items:center;padding:1px 7px;border-radius:10px;font-size:10px;margin-left:8px}
 .cnt-pend{background:#FFE0C0;color:var(--ort)}.cnt-comp{background:#CCEBB0;color:var(--gnt)}
 .cnt-cerrs{background:#FFDCAA;color:var(--cst)}.cnt-cerrn{background:#C8D9F5;color:var(--cn)}
-.row-empty td{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
-.loading-row td{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
+.row-empty td,.loading-row td{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
+
+/* DROPDOWN ACCIONES */
+.dropdown{position:fixed;background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);box-shadow:0 8px 24px rgba(0,0,0,0.12);z-index:500;min-width:200px;overflow:hidden;display:none}
+.dropdown.open{display:block}
+.dd-header{padding:10px 14px 8px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);border-bottom:1px solid var(--bd)}
+.dd-item{display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:13px;color:var(--tx);cursor:pointer;transition:background .1s}
+.dd-item:hover{background:var(--s2)}
+.dd-item i{font-size:16px;width:18px;text-align:center}
+.dd-item.green{color:var(--gnt)}.dd-item.orange{color:var(--cst)}.dd-item.blue{color:var(--cnt)}.dd-item.red{color:#C0392B}
+.dd-sep{height:1px;background:var(--bd);margin:4px 0}
+
 /* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
@@ -111,27 +121,32 @@ tbody tr:last-child td{border-bottom:none}
 .autocomplete-list{position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1px solid var(--bd);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.1);z-index:100;max-height:180px;overflow-y:auto;display:none}
 .autocomplete-list.open{display:block}
 .ac-item{padding:8px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--bd)}
-.ac-item:last-child{border-bottom:none}
-.ac-item:hover{background:var(--s2)}
-.ac-item strong{color:var(--tx);font-weight:600}
-.ac-item span{color:var(--tx3);font-size:11px;margin-left:6px}
+.ac-item:last-child{border-bottom:none}.ac-item:hover{background:var(--s2)}
+.ac-item strong{color:var(--tx);font-weight:600}.ac-item span{color:var(--tx3);font-size:11px;margin-left:6px}
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd)}
 .btn-cancel{padding:8px 16px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx2);cursor:pointer}
 .btn-save{padding:8px 18px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
-.btn-save:hover{background:#D4611A}
-.btn-save:disabled{opacity:.5;cursor:not-allowed}
-.toast{position:fixed;bottom:24px;right:24px;background:#1A1A18;color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:300;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
-.toast.show{opacity:1;transform:translateY(0)}
-.toast.error{background:#C0392B}
+.btn-save:hover{background:#D4611A}.btn-save:disabled{opacity:.5;cursor:not-allowed}
+.btn-green{background:var(--gn)}.btn-green:hover{background:#5A9840}
+.btn-blue{background:var(--cn)}.btn-blue:hover{background:#0D48AA}
+
+/* MODAL PAGO */
+.pago-info{background:var(--s2);border-radius:var(--r);padding:14px;margin-bottom:16px}
+.pago-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:13px}
+.pago-row:last-child{margin-bottom:0;font-weight:600;font-size:15px}
+
+.toast{position:fixed;bottom:24px;right:24px;background:#1A1A18;color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:600;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}.toast.error{background:#C0392B}
 @media(max-width:700px){.main{padding:14px}.stats{grid-template-columns:repeat(2,1fr)}.fin-cards{grid-template-columns:1fr}.search-wrap input{width:160px}}
 </style>
 </head>
 <body>
+
 <div class="topbar">
   <div class="brand">
     <div class="brand-icon"><i class="ti ti-bolt"></i></div>
     <span class="brand-name">Gestión de Trabajos</span>
-    <span class="brand-badge">v6.0</span>
+    <span class="brand-badge">v6.1</span>
   </div>
   <div class="topbar-right">
     <div class="user-chip"><div class="avatar">AD</div>Administrador</div>
@@ -186,7 +201,7 @@ tbody tr:last-child td{border-bottom:none}
       <button class="filt-btn" id="fb-c" onclick="setF('completado',this)"><i class="ti ti-check" style="font-size:13px"></i> Completados</button>
       <button class="filt-btn" id="fb-cerr" onclick="setF('cerrado',this)"><i class="ti ti-archive" style="font-size:13px"></i> Cerrados</button>
     </div>
-    <button class="btn-new" onclick="openModal()"><i class="ti ti-plus"></i> Nueva Tarea</button>
+    <button class="btn-new" onclick="openModal('nuevo')"><i class="ti ti-plus"></i> Nueva Tarea</button>
   </div>
 
   <div class="table-card">
@@ -197,19 +212,19 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+<!-- DROPDOWN ACCIONES -->
+<div class="dropdown" id="dropdown"></div>
+
 <!-- MODAL NUEVA TAREA -->
-<div class="overlay" id="overlay" onclick="if(event.target===this)closeModal()">
+<div class="overlay" id="overlay-nuevo" onclick="if(event.target===this)closeModal('nuevo')">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title"><i class="ti ti-plus" style="color:var(--or);margin-right:6px"></i>Nueva Tarea</div>
-      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+      <button class="modal-close" onclick="closeModal('nuevo')"><i class="ti ti-x"></i></button>
     </div>
     <div class="fg">
-      <div class="ff">
-        <label>Descripción</label>
-        <input type="text" id="f-desc" placeholder="Placas, grabado, vinilo...">
-      </div>
-      <div class="autocomplete-wrap ff" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+      <div class="ff"><label>Descripción</label><input type="text" id="f-desc" placeholder="Placas, grabado, vinilo..."></div>
+      <div class="ff" style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
         <div>
           <label>Cliente</label>
           <div class="autocomplete-wrap">
@@ -217,34 +232,53 @@ tbody tr:last-child td{border-bottom:none}
             <div class="autocomplete-list" id="ac-list"></div>
           </div>
         </div>
-        <div>
-          <label>Teléfono</label>
-          <input type="text" id="f-tel" placeholder="291...">
-        </div>
+        <div><label>Teléfono</label><input type="text" id="f-tel" placeholder="291..."></div>
       </div>
       <div><label>Cantidad</label><input type="number" id="f-qty" value="1" min="1" oninput="calcTotal()"></div>
       <div><label>Precio Unit.</label><input type="number" id="f-precio" placeholder="0" oninput="calcTotal()"></div>
       <div><label>Seña</label><input type="number" id="f-sena" placeholder="0" oninput="calcTotal()"></div>
-      <div>
-        <label>Medio de Pago</label>
+      <div><label>Medio de Pago</label>
         <select id="f-pago"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
       </div>
       <div><label>Detalles / Material</label><input type="text" id="f-det" placeholder="Acrilico 4mm, Med: 30x20..."></div>
       <div><label>CUIT</label><input type="text" id="f-cuit" placeholder="20-XXXXXXXX-X"></div>
       <div class="ff" style="background:var(--s2);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div>
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Total</div>
-          <div id="f-total" style="font-size:18px;font-weight:600">$0</div>
-        </div>
-        <div>
-          <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Saldo</div>
-          <div id="f-saldo-calc" style="font-size:18px;font-weight:600;color:var(--cst)">$0</div>
-        </div>
+        <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Total</div><div id="f-total" style="font-size:18px;font-weight:600">$0</div></div>
+        <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Saldo</div><div id="f-saldo-calc" style="font-size:18px;font-weight:600;color:var(--cst)">$0</div></div>
       </div>
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
-      <button class="btn-save" id="btn-save" onclick="guardarTarea()"><i class="ti ti-check"></i> Guardar</button>
+      <button class="btn-cancel" onclick="closeModal('nuevo')">Cancelar</button>
+      <button class="btn-save" id="btn-save-nuevo" onclick="guardarTarea()"><i class="ti ti-check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL REGISTRAR PAGO -->
+<div class="overlay" id="overlay-pago" onclick="if(event.target===this)closeModal('pago')">
+  <div class="modal" style="width:380px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-cash" style="color:var(--gn);margin-right:6px"></i>Registrar Pago</div>
+      <button class="modal-close" onclick="closeModal('pago')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="pago-info" id="pago-info"></div>
+    <div class="fg">
+      <div class="ff">
+        <label>Monto recibido</label>
+        <input type="number" id="pago-monto" placeholder="0" oninput="calcPago()">
+      </div>
+      <div class="ff">
+        <label>Medio de Pago</label>
+        <select id="pago-medio"><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
+      </div>
+      <div class="ff" id="pago-nuevo-saldo" style="background:var(--s2);border-radius:var(--r);padding:12px;display:none">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Nuevo saldo pendiente</div>
+        <div id="pago-saldo-result" style="font-size:20px;font-weight:600;color:var(--cst)">$0</div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('pago')">Cancelar</button>
+      <button class="btn-save btn-green" id="btn-save-pago" onclick="guardarPago()"><i class="ti ti-check"></i> Confirmar pago</button>
     </div>
   </div>
 </div>
@@ -252,118 +286,88 @@ tbody tr:last-child td{border-bottom:none}
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
-// ── SUPABASE ──────────────────────────────────────────
 const SUPA_URL = 'https://kjexzywygtzuxtzlberb.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
 const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
 
-// ── STATE ─────────────────────────────────────────────
-let tareas = [];
-let clientes = [];
-let filtro = 'all';
-let periodo = 'mes';
+let tareas = [], clientes = [], filtro = 'all', periodo = 'mes';
+let pagoTareaId = null;
 
-// ── HELPERS ───────────────────────────────────────────
-function fmt(n) {
-  if (n == null || isNaN(n)) return '—';
-  return '$' + Math.round(n).toLocaleString('es-AR');
-}
-function fmtFecha(iso) {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
-}
-function inPeriodo(iso) {
-  const d = new Date(iso);
-  const now = new Date();
-  if (periodo === 'todo') return true;
-  if (periodo === 'semana') {
-    const lun = new Date(now); lun.setDate(now.getDate() - now.getDay() + 1); lun.setHours(0,0,0,0);
-    return d >= lun;
-  }
-  if (periodo === 'mes') return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
-  if (periodo === 'anio') return d.getFullYear() === now.getFullYear();
+// ── HELPERS ──────────────────────────────────────────
+function fmt(n){ if(n==null||isNaN(n))return'—'; return'$'+Math.round(n).toLocaleString('es-AR'); }
+function fmtFecha(iso){ if(!iso)return'—'; const d=new Date(iso); return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0'); }
+function inPeriodo(iso){
+  const d=new Date(iso), now=new Date();
+  if(periodo==='todo') return true;
+  if(periodo==='semana'){ const l=new Date(now); l.setDate(now.getDate()-now.getDay()+1); l.setHours(0,0,0,0); return d>=l; }
+  if(periodo==='mes') return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+  if(periodo==='anio') return d.getFullYear()===now.getFullYear();
   return true;
 }
 
-// ── CARGAR DATOS ──────────────────────────────────────
-async function cargarTodo() {
-  const [{ data: trabajosData, error: e1 }, { data: clientesData, error: e2 }] = await Promise.all([
-    sb.from('trabajos').select('*, clientes(nombre, telefono)').eq('archivado', false).order('fecha', { ascending: false }),
-    sb.from('clientes').select('id, nombre, telefono, cuit').order('nombre')
+// ── DATOS ────────────────────────────────────────────
+async function cargarTodo(){
+  const [{ data: t, error: e1 },{ data: c, error: e2 }] = await Promise.all([
+    sb.from('trabajos').select('*, clientes(nombre,telefono)').eq('archivado',false).order('fecha',{ascending:false}),
+    sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre')
   ]);
-  if (e1) { showToast('Error cargando trabajos: ' + e1.message, true); return; }
-  if (e2) { showToast('Error cargando clientes: ' + e2.message, true); return; }
-  tareas = trabajosData || [];
-  clientes = clientesData || [];
-  renderTabla();
-  updateFin();
-  updateStats();
+  if(e1){ showToast('Error cargando trabajos: '+e1.message,true); return; }
+  if(e2){ showToast('Error cargando clientes: '+e2.message,true); return; }
+  tareas = t||[]; clientes = c||[];
+  renderTabla(); updateFin(); updateStats();
 }
 
 // ── STATS ─────────────────────────────────────────────
-function updateStats() {
-  document.getElementById('cnt-p').textContent = tareas.filter(t => t.estado === 'pendiente').length;
-  document.getElementById('cnt-c').textContent = tareas.filter(t => t.estado === 'completado').length;
-  document.getElementById('cnt-cs').textContent = tareas.filter(t => t.estado === 'cerrado' && t.saldo > 0).length;
-  document.getElementById('cnt-cn').textContent = tareas.filter(t => t.estado === 'cerrado' && t.saldo <= 0).length;
+function updateStats(){
+  document.getElementById('cnt-p').textContent = tareas.filter(t=>t.estado==='pendiente').length;
+  document.getElementById('cnt-c').textContent = tareas.filter(t=>t.estado==='completado').length;
+  document.getElementById('cnt-cs').textContent = tareas.filter(t=>t.estado==='cerrado'&&t.saldo>0).length;
+  document.getElementById('cnt-cn').textContent = tareas.filter(t=>t.estado==='cerrado'&&t.saldo<=0).length;
 }
 
 // ── FINANCIERO ────────────────────────────────────────
-function setPeriodo(p, btn) {
-  periodo = p;
-  document.querySelectorAll('.ptab').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  updateFin();
-}
-function updateFin() {
-  const saldoTotal = tareas.filter(t => t.estado === 'cerrado' && t.saldo > 0).reduce((a, t) => a + (t.saldo || 0), 0);
-  const cobradoArr = tareas.filter(t => t.estado === 'cerrado' && t.saldo <= 0 && inPeriodo(t.fecha));
-  const cobrado = cobradoArr.reduce((a, t) => a + (t.total || 0), 0);
-  const procesoArr = tareas.filter(t => t.estado === 'pendiente' || t.estado === 'completado');
-  const proceso = procesoArr.reduce((a, t) => a + (t.total || 0), 0);
-  document.getElementById('fin-saldo').textContent = fmt(saldoTotal);
-  document.getElementById('fin-saldo-sub').textContent = tareas.filter(t => t.estado === 'cerrado' && t.saldo > 0).length + ' trabajos cerrados';
-  document.getElementById('fin-cobrado').textContent = fmt(cobrado);
-  document.getElementById('fin-cobrado-sub').textContent = cobradoArr.length + ' trabajos en el período';
-  document.getElementById('fin-proceso').textContent = fmt(proceso);
-  document.getElementById('fin-proceso-sub').textContent = procesoArr.filter(t=>t.estado==='pendiente').length + ' pendientes, ' + procesoArr.filter(t=>t.estado==='completado').length + ' completados';
+function setPeriodo(p,btn){ periodo=p; document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); updateFin(); }
+function updateFin(){
+  const saldoArr=tareas.filter(t=>t.estado==='cerrado'&&t.saldo>0);
+  const cobradoArr=tareas.filter(t=>t.estado==='cerrado'&&t.saldo<=0&&inPeriodo(t.fecha));
+  const procesoArr=tareas.filter(t=>t.estado==='pendiente'||t.estado==='completado');
+  document.getElementById('fin-saldo').textContent=fmt(saldoArr.reduce((a,t)=>a+(t.saldo||0),0));
+  document.getElementById('fin-saldo-sub').textContent=saldoArr.length+' trabajos cerrados';
+  document.getElementById('fin-cobrado').textContent=fmt(cobradoArr.reduce((a,t)=>a+(t.total||0),0));
+  document.getElementById('fin-cobrado-sub').textContent=cobradoArr.length+' trabajos en el período';
+  document.getElementById('fin-proceso').textContent=fmt(procesoArr.reduce((a,t)=>a+(t.total||0),0));
+  document.getElementById('fin-proceso-sub').textContent=procesoArr.filter(t=>t.estado==='pendiente').length+' pendientes, '+procesoArr.filter(t=>t.estado==='completado').length+' completados';
 }
 
 // ── FILTROS ───────────────────────────────────────────
-function setF(f, btn) {
-  filtro = f;
-  document.querySelectorAll('.filt-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
-  renderTabla();
-}
+function setF(f,btn){ filtro=f; document.querySelectorAll('.filt-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderTabla(); }
 
 // ── TABLA ─────────────────────────────────────────────
-function renderTabla() {
-  const q = (document.getElementById('srch').value || '').toLowerCase();
-  const body = document.getElementById('tbody');
-  let html = '';
-  const grupos = [
-    { key:'pend', label:'Pendientes', filter:t=>t.estado==='pendiente', secCls:'sec-pend', dotCls:'dot-pend', cntCls:'cnt-pend', rowCls:'row-pend', chkCls:'', pillCls:'pill-pend', pillTxt:'Pendiente' },
-    { key:'comp', label:'Completados — listos para retirar', filter:t=>t.estado==='completado', secCls:'sec-comp', dotCls:'dot-comp', cntCls:'cnt-comp', rowCls:'row-comp', chkCls:'chk-comp', pillCls:'pill-comp', pillTxt:'Completado' },
-    { key:'cerrs', label:'Cerrados — saldo pendiente', filter:t=>t.estado==='cerrado'&&t.saldo>0, secCls:'sec-cerrs', dotCls:'dot-cerrs', cntCls:'cnt-cerrs', rowCls:'row-cerrs', chkCls:'chk-cerrs', pillCls:'pill-cerr', pillTxt:'Cerrado' },
-    { key:'cerrn', label:'Cerrados — cobrados', filter:t=>t.estado==='cerrado'&&t.saldo<=0, secCls:'sec-cerrn', dotCls:'dot-cerrn', cntCls:'cnt-cerrn', rowCls:'row-cerrn', chkCls:'chk-cerrn', pillCls:'pill-comp', pillTxt:'Cerrado' },
+function renderTabla(){
+  const q=(document.getElementById('srch').value||'').toLowerCase();
+  const body=document.getElementById('tbody');
+  let html='';
+  const grupos=[
+    {key:'pend',label:'Pendientes',filter:t=>t.estado==='pendiente',secCls:'sec-pend',dotCls:'dot-pend',cntCls:'cnt-pend',rowCls:'row-pend',chkCls:'',pillCls:'pill-pend',pillTxt:'Pendiente'},
+    {key:'comp',label:'Completados — listos para retirar',filter:t=>t.estado==='completado',secCls:'sec-comp',dotCls:'dot-comp',cntCls:'cnt-comp',rowCls:'row-comp',chkCls:'chk-comp',pillCls:'pill-comp',pillTxt:'Completado'},
+    {key:'cerrs',label:'Cerrados — saldo pendiente',filter:t=>t.estado==='cerrado'&&t.saldo>0,secCls:'sec-cerrs',dotCls:'dot-cerrs',cntCls:'cnt-cerrs',rowCls:'row-cerrs',chkCls:'chk-cerrs',pillCls:'pill-cerr',pillTxt:'Cerrado'},
+    {key:'cerrn',label:'Cerrados — cobrados',filter:t=>t.estado==='cerrado'&&t.saldo<=0,secCls:'sec-cerrn',dotCls:'dot-cerrn',cntCls:'cnt-cerrn',rowCls:'row-cerrn',chkCls:'chk-cerrn',pillCls:'pill-comp',pillTxt:'Cerrado'},
   ];
-  grupos.forEach(g => {
-    const rows = tareas.filter(t => {
-      const matchG = g.filter(t);
-      const matchF = filtro==='all' || (filtro==='cerrado'&&t.estado==='cerrado') || t.estado===filtro;
-      const clienteNombre = t.clientes?.nombre || '';
-      const matchQ = !q || clienteNombre.toLowerCase().includes(q) || (t.descripcion||'').toLowerCase().includes(q) || (t.numero||'').includes(q);
-      return matchG && matchF && matchQ;
+  grupos.forEach(g=>{
+    const rows=tareas.filter(t=>{
+      const matchG=g.filter(t);
+      const matchF=filtro==='all'||(filtro==='cerrado'&&t.estado==='cerrado')||t.estado===filtro;
+      const cn=t.clientes?.nombre||'';
+      const matchQ=!q||cn.toLowerCase().includes(q)||(t.descripcion||'').toLowerCase().includes(q)||(t.numero||'').includes(q);
+      return matchG&&matchF&&matchQ;
     });
-    if (!rows.length) return;
-    html += `<tr class="sec-row ${g.secCls}"><td colspan="9"><span class="sec-dot ${g.dotCls}"></span>${g.label}<span class="sec-count ${g.cntCls}">${rows.length}</span></td></tr>`;
-    rows.forEach(t => {
-      const chk = g.chkCls ? `<div class="chk ${g.chkCls}"><i class="ti ti-check" style="font-size:9px"></i></div>` : `<div class="chk"></div>`;
-      const saldoH = t.saldo > 0 ? `<span class="saldo-pos">${fmt(t.saldo)}</span>` : `<span class="saldo-zero">—</span>`;
-      const cliente = t.clientes?.nombre || '—';
-      html += `<tr class="${g.rowCls}">
+    if(!rows.length) return;
+    html+=`<tr class="sec-row ${g.secCls}"><td colspan="9"><span class="sec-dot ${g.dotCls}"></span>${g.label}<span class="sec-count ${g.cntCls}">${rows.length}</span></td></tr>`;
+    rows.forEach(t=>{
+      const chk=g.chkCls?`<div class="chk ${g.chkCls}"><i class="ti ti-check" style="font-size:9px"></i></div>`:`<div class="chk"></div>`;
+      const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
+      const cliente=t.clientes?.nombre||'—';
+      html+=`<tr class="${g.rowCls}">
         <td>${chk}</td>
         <td class="mono">${t.numero||'—'}</td>
         <td style="color:var(--tx3);font-size:12px">${fmtFecha(t.fecha)}</td>
@@ -372,121 +376,195 @@ function renderTabla() {
         <td style="font-weight:500">${fmt(t.total)}</td>
         <td>${saldoH}</td>
         <td><span class="pill ${g.pillCls}">${g.pillTxt}</span></td>
-        <td><button class="act-btn" title="Opciones" onclick="acciones('${t.id}')"><i class="ti ti-dots-vertical"></i></button></td>
+        <td><button class="act-btn" onclick="abrirDropdown(event,'${t.id}')"><i class="ti ti-dots-vertical"></i></button></td>
       </tr>`;
     });
   });
-  if (!html) html = `<tr class="row-empty"><td colspan="9"><i class="ti ti-search" style="font-size:20px;display:block;margin:0 auto 8px;color:var(--tx3)"></i>No hay resultados</td></tr>`;
-  body.innerHTML = html;
+  if(!html) html=`<tr class="row-empty"><td colspan="9"><i class="ti ti-search" style="font-size:20px;display:block;margin:0 auto 8px;color:var(--tx3)"></i>No hay resultados</td></tr>`;
+  body.innerHTML=html;
 }
 
-// ── AUTOCOMPLETE CLIENTE ──────────────────────────────
-function acCliente(val) {
-  const list = document.getElementById('ac-list');
-  if (!val || val.length < 2) { list.classList.remove('open'); return; }
-  const matches = clientes.filter(c => c.nombre.toLowerCase().includes(val.toLowerCase())).slice(0, 8);
-  if (!matches.length) { list.classList.remove('open'); return; }
-  list.innerHTML = matches.map(c => `<div class="ac-item" onclick="selCliente('${c.id}','${c.nombre}','${c.telefono||''}','${c.cuit||''}')"><strong>${c.nombre}</strong><span>${c.telefono||''}</span></div>`).join('');
+// ── DROPDOWN ACCIONES ─────────────────────────────────
+function abrirDropdown(e, id){
+  e.stopPropagation();
+  const t=tareas.find(x=>x.id===id);
+  if(!t) return;
+  const dd=document.getElementById('dropdown');
+  const btn=e.currentTarget;
+  const rect=btn.getBoundingClientRect();
+  let items='';
+  const cliente=t.clientes?.nombre||'—';
+  items+=`<div class="dd-header">${t.numero} — ${cliente}</div>`;
+  if(t.estado==='pendiente'){
+    items+=`<div class="dd-item green" onclick="cambiarEstado('${id}','completado')"><i class="ti ti-check"></i>Marcar Completado</div>`;
+  }
+  if(t.estado==='completado'){
+    items+=`<div class="dd-item blue" onclick="cambiarEstado('${id}','cerrado')"><i class="ti ti-lock"></i>Marcar Cerrado</div>`;
+    items+=`<div class="dd-sep"></div>`;
+    items+=`<div class="dd-item" onclick="cambiarEstado('${id}','pendiente')"><i class="ti ti-arrow-back-up"></i>Volver a Pendiente</div>`;
+  }
+  if(t.estado==='cerrado'&&t.saldo>0){
+    items+=`<div class="dd-item green" onclick="abrirPago('${id}')"><i class="ti ti-cash"></i>Registrar Pago</div>`;
+  }
+  if(t.estado==='cerrado'&&t.saldo<=0){
+    items+=`<div class="dd-item" style="color:var(--tx3);cursor:default"><i class="ti ti-circle-check"></i>Cobrado completo</div>`;
+  }
+  dd.innerHTML=items;
+  dd.classList.add('open');
+  // Posicionar
+  const top=rect.bottom+6;
+  const left=rect.right-200;
+  dd.style.top=top+'px';
+  dd.style.left=Math.max(left,8)+'px';
+}
+document.addEventListener('click',()=>document.getElementById('dropdown').classList.remove('open'));
+
+// ── CAMBIAR ESTADO ────────────────────────────────────
+async function cambiarEstado(id, nuevoEstado){
+  document.getElementById('dropdown').classList.remove('open');
+  const t=tareas.find(x=>x.id===id);
+  if(!t) return;
+  const updates={ estado: nuevoEstado };
+  if(nuevoEstado==='cerrado') updates.listo=true;
+  if(nuevoEstado==='pendiente'){ updates.listo=false; updates.retiro=false; }
+  const {error}=await sb.from('trabajos').update(updates).eq('id',id);
+  if(error){ showToast('Error: '+error.message,true); return; }
+  Object.assign(t, updates);
+  renderTabla(); updateStats(); updateFin();
+  const labels={ completado:'Completado', cerrado:'Cerrado', pendiente:'Pendiente' };
+  showToast(t.numero+' → '+labels[nuevoEstado]);
+}
+
+// ── PAGO PARCIAL ──────────────────────────────────────
+function abrirPago(id){
+  document.getElementById('dropdown').classList.remove('open');
+  const t=tareas.find(x=>x.id===id);
+  if(!t) return;
+  pagoTareaId=id;
+  document.getElementById('pago-monto').value='';
+  document.getElementById('pago-nuevo-saldo').style.display='none';
+  document.getElementById('pago-info').innerHTML=`
+    <div class="pago-row"><span>Total del trabajo</span><span style="font-weight:500">${fmt(t.total)}</span></div>
+    <div class="pago-row"><span>Seña pagada</span><span>${fmt(t.sena)}</span></div>
+    <div class="pago-row"><span style="color:var(--cst)">Saldo pendiente</span><span style="color:var(--cst);font-weight:600">${fmt(t.saldo)}</span></div>
+  `;
+  openModal('pago');
+  document.getElementById('pago-monto').focus();
+}
+function calcPago(){
+  const t=tareas.find(x=>x.id===pagoTareaId);
+  if(!t) return;
+  const monto=parseFloat(document.getElementById('pago-monto').value)||0;
+  const nuevoSaldo=Math.max((t.saldo||0)-monto,0);
+  const el=document.getElementById('pago-nuevo-saldo');
+  el.style.display=monto>0?'block':'none';
+  document.getElementById('pago-saldo-result').textContent=fmt(nuevoSaldo);
+  document.getElementById('pago-saldo-result').style.color=nuevoSaldo>0?'var(--cst)':'var(--gnt)';
+}
+async function guardarPago(){
+  const t=tareas.find(x=>x.id===pagoTareaId);
+  if(!t) return;
+  const monto=parseFloat(document.getElementById('pago-monto').value)||0;
+  if(monto<=0){ showToast('Ingresá un monto válido',true); return; }
+  const btn=document.getElementById('btn-save-pago');
+  btn.disabled=true;
+  const nuevoSaldo=Math.max((t.saldo||0)-monto,0);
+  const nuevaSena=(t.sena||0)+monto;
+  const {error}=await sb.from('trabajos').update({ saldo:nuevoSaldo, sena:nuevaSena }).eq('id',pagoTareaId);
+  btn.disabled=false;
+  if(error){ showToast('Error: '+error.message,true); return; }
+  t.saldo=nuevoSaldo; t.sena=nuevaSena;
+  closeModal('pago');
+  renderTabla(); updateStats(); updateFin();
+  showToast('Pago de '+fmt(monto)+' registrado. Saldo restante: '+fmt(nuevoSaldo));
+}
+
+// ── AUTOCOMPLETE ──────────────────────────────────────
+function acCliente(val){
+  const list=document.getElementById('ac-list');
+  if(!val||val.length<2){ list.classList.remove('open'); return; }
+  const matches=clientes.filter(c=>c.nombre.toLowerCase().includes(val.toLowerCase())).slice(0,8);
+  if(!matches.length){ list.classList.remove('open'); return; }
+  list.innerHTML=matches.map(c=>`<div class="ac-item" onclick="selCliente('${c.id}','${c.nombre.replace(/'/g,"\\'")}','${(c.telefono||'').replace(/'/g,"\\'")}','${(c.cuit||'').replace(/'/g,"\\'")}')"><strong>${c.nombre}</strong><span>${c.telefono||''}</span></div>`).join('');
   list.classList.add('open');
 }
-function selCliente(id, nombre, tel, cuit) {
-  document.getElementById('f-cli').value = nombre;
-  document.getElementById('f-cli').dataset.clienteId = id;
-  document.getElementById('f-tel').value = tel;
-  document.getElementById('f-cuit').value = cuit;
+function selCliente(id,nombre,tel,cuit){
+  document.getElementById('f-cli').value=nombre;
+  document.getElementById('f-cli').dataset.clienteId=id;
+  document.getElementById('f-tel').value=tel;
+  document.getElementById('f-cuit').value=cuit;
   document.getElementById('ac-list').classList.remove('open');
 }
-document.addEventListener('click', e => {
-  if (!e.target.closest('.autocomplete-wrap')) document.getElementById('ac-list').classList.remove('open');
-});
+document.addEventListener('click',e=>{ if(!e.target.closest('.autocomplete-wrap')) document.getElementById('ac-list').classList.remove('open'); });
 
-// ── MODAL ─────────────────────────────────────────────
-function calcTotal() {
-  const qty = parseFloat(document.getElementById('f-qty').value) || 0;
-  const precio = parseFloat(document.getElementById('f-precio').value) || 0;
-  const sena = parseFloat(document.getElementById('f-sena').value) || 0;
-  const total = qty * precio;
-  const saldo = total - sena;
-  document.getElementById('f-total').textContent = fmt(total);
-  document.getElementById('f-saldo-calc').textContent = fmt(Math.max(saldo, 0));
-  document.getElementById('f-saldo-calc').style.color = saldo > 0 ? 'var(--cst)' : 'var(--gnt)';
-}
-function openModal() {
-  document.getElementById('overlay').classList.add('open');
-  document.getElementById('f-desc').focus();
-}
-function closeModal() {
-  document.getElementById('overlay').classList.remove('open');
-  ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-det','f-cuit'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.value = id === 'f-qty' ? '1' : ''; delete el.dataset.clienteId; }
-  });
-  document.getElementById('f-pago').value = '';
-  document.getElementById('f-total').textContent = '$0';
-  document.getElementById('f-saldo-calc').textContent = '$0';
+// ── MODALES ───────────────────────────────────────────
+function openModal(which){ document.getElementById('overlay-'+which).classList.add('open'); }
+function closeModal(which){
+  document.getElementById('overlay-'+which).classList.remove('open');
+  if(which==='nuevo'){
+    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-det','f-cuit'].forEach(id=>{
+      const el=document.getElementById(id); if(el){el.value=id==='f-qty'?'1':''; delete el.dataset.clienteId;}
+    });
+    document.getElementById('f-pago').value='';
+    document.getElementById('f-total').textContent='$0';
+    document.getElementById('f-saldo-calc').textContent='$0';
+  }
+  if(which==='pago') pagoTareaId=null;
 }
 
-async function guardarTarea() {
-  const desc = document.getElementById('f-desc').value.trim();
-  const cli = document.getElementById('f-cli').value.trim();
-  if (!desc || !cli) { showToast('Completá descripción y cliente', true); return; }
-  const btn = document.getElementById('btn-save');
-  btn.disabled = true;
-  const qty = parseFloat(document.getElementById('f-qty').value) || 1;
-  const precio = parseFloat(document.getElementById('f-precio').value) || 0;
-  const sena = parseFloat(document.getElementById('f-sena').value) || 0;
-  const total = qty * precio;
-  const saldo = total - sena;
-  // Buscar o crear cliente
-  let clienteId = document.getElementById('f-cli').dataset.clienteId;
-  if (!clienteId) {
-    const { data: cExist } = await sb.from('clientes').select('id').ilike('nombre', cli).limit(1).single();
-    if (cExist) {
-      clienteId = cExist.id;
-    } else {
-      const { data: cNew } = await sb.from('clientes').insert({ nombre: cli, telefono: document.getElementById('f-tel').value }).select().single();
-      if (cNew) { clienteId = cNew.id; clientes.push(cNew); }
+function calcTotal(){
+  const qty=parseFloat(document.getElementById('f-qty').value)||0;
+  const precio=parseFloat(document.getElementById('f-precio').value)||0;
+  const sena=parseFloat(document.getElementById('f-sena').value)||0;
+  const total=qty*precio, saldo=total-sena;
+  document.getElementById('f-total').textContent=fmt(total);
+  document.getElementById('f-saldo-calc').textContent=fmt(Math.max(saldo,0));
+  document.getElementById('f-saldo-calc').style.color=saldo>0?'var(--cst)':'var(--gnt)';
+}
+
+async function guardarTarea(){
+  const desc=document.getElementById('f-desc').value.trim();
+  const cli=document.getElementById('f-cli').value.trim();
+  if(!desc||!cli){ showToast('Completá descripción y cliente',true); return; }
+  const btn=document.getElementById('btn-save-nuevo'); btn.disabled=true;
+  const qty=parseFloat(document.getElementById('f-qty').value)||1;
+  const precio=parseFloat(document.getElementById('f-precio').value)||0;
+  const sena=parseFloat(document.getElementById('f-sena').value)||0;
+  const total=qty*precio, saldo=total-sena;
+  let clienteId=document.getElementById('f-cli').dataset.clienteId;
+  if(!clienteId){
+    const {data:cExist}=await sb.from('clientes').select('id').ilike('nombre',cli).limit(1).single();
+    if(cExist){ clienteId=cExist.id; }
+    else{
+      const {data:cNew}=await sb.from('clientes').insert({nombre:cli,telefono:document.getElementById('f-tel').value}).select().single();
+      if(cNew){ clienteId=cNew.id; clientes.push(cNew); }
     }
   }
-  // Generar número
-  const maxNum = tareas.reduce((m, t) => Math.max(m, parseInt(t.numero||'0')), 0);
-  const numero = String(maxNum + 1).padStart(5, '0');
-  const { data, error } = await sb.from('trabajos').insert({
-    numero, estado: 'pendiente',
-    descripcion: desc,
-    cliente_id: clienteId,
-    detalles: document.getElementById('f-det').value,
-    cantidad: qty, precio_unit: precio, sena, total, saldo,
-    medio_pago: document.getElementById('f-pago').value,
-    cuit: document.getElementById('f-cuit').value,
-  }).select('*, clientes(nombre, telefono)').single();
-  btn.disabled = false;
-  if (error) { showToast('Error: ' + error.message, true); return; }
+  const maxNum=tareas.reduce((m,t)=>Math.max(m,parseInt(t.numero||'0')),0);
+  const numero=String(maxNum+1).padStart(5,'0');
+  const {data,error}=await sb.from('trabajos').insert({
+    numero, estado:'pendiente', descripcion:desc, cliente_id:clienteId,
+    detalles:document.getElementById('f-det').value,
+    cantidad:qty, precio_unit:precio, sena, total, saldo,
+    medio_pago:document.getElementById('f-pago').value,
+    cuit:document.getElementById('f-cuit').value,
+  }).select('*, clientes(nombre,telefono)').single();
+  btn.disabled=false;
+  if(error){ showToast('Error: '+error.message,true); return; }
   tareas.unshift(data);
-  closeModal();
-  renderTabla();
-  updateStats();
-  updateFin();
-  showToast('Tarea ' + numero + ' creada');
-}
-
-// ── ACCIONES (placeholder) ────────────────────────────
-function acciones(id) {
-  const t = tareas.find(x => x.id === id);
-  if (!t) return;
-  showToast('ID: ' + t.numero + ' — acciones próximamente');
+  closeModal('nuevo'); renderTabla(); updateStats(); updateFin();
+  showToast('Tarea '+numero+' creada');
 }
 
 // ── TOAST ─────────────────────────────────────────────
-function showToast(msg, error) {
-  const t = document.getElementById('toast');
-  document.getElementById('toast-msg').textContent = msg;
-  t.className = 'toast' + (error ? ' error' : '');
+function showToast(msg,error){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.className='toast'+(error?' error':'');
   t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
+  setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-// ── INIT ──────────────────────────────────────────────
 cargarTodo();
 </script>
 </body>
