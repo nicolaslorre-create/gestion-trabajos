@@ -290,20 +290,16 @@ tbody tr:last-child td{border-bottom:none}
         </div>
         <div><label>Teléfono</label><input type="text" id="f-tel" placeholder="291..."></div>
       </div>
-      <div><label>Material / Detalles</label><input type="text" id="f-det" placeholder="Acrilico 4mm..."></div>
-      <div><label>Medidas / Espesor</label><input type="text" id="f-med" placeholder="30x20cm, 1.5mm..."></div>
+      <div>
+        <label>Material</label>
+        <select id="f-mat-id" onchange="onMatChange()">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div><label>Medidas</label><input type="text" id="f-med" placeholder="30x20cm, 40x60cm..."></div>
       <div>
         <label>Procesos</label>
-        <div class="proc-grid" id="proc-grid">
-          <div class="proc-chip" data-value="DTF" onclick="toggleProc(this)"><i class="ti ti-printer" style="font-size:12px"></i> DTF</div>
-          <div class="proc-chip" data-value="Grabado" onclick="toggleProc(this)"><i class="ti ti-pencil" style="font-size:12px"></i> Grabado</div>
-          <div class="proc-chip" data-value="NOVOCORTE" onclick="toggleProc(this)"><i class="ti ti-cut" style="font-size:12px"></i> NOVOCORTE</div>
-          <div class="proc-chip" data-value="MH" onclick="toggleProc(this)"><i class="ti ti-layers" style="font-size:12px"></i> MH</div>
-          <div class="proc-chip" data-value="BLACK" onclick="toggleProc(this)"><i class="ti ti-moon" style="font-size:12px"></i> BLACK</div>
-          <div class="proc-chip" data-value="IMARNE" onclick="toggleProc(this)"><i class="ti ti-tools" style="font-size:12px"></i> IMARNE</div>
-          <div class="proc-chip" data-value="GRAFIKARTE" onclick="toggleProc(this)"><i class="ti ti-palette" style="font-size:12px"></i> GRAFIKARTE</div>
-          <div class="proc-chip" data-value="DARDO" onclick="toggleProc(this)"><i class="ti ti-target" style="font-size:12px"></i> DARDO</div>
-        </div>
+        <div class="proc-grid" id="proc-grid"><span style="color:var(--tx3);font-size:12px">Cargando...</span></div>
       </div>
       <div><label>Cantidad</label><input type="number" id="f-qty" value="1" min="1" oninput="calcTotal()"></div>
       <div><label>Precio Unit.</label><input type="number" id="f-precio" placeholder="0" oninput="calcTotal()"></div>
@@ -357,7 +353,7 @@ const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-let tareas=[],clientes=[],filtro='all',periodo='mes',pagoTareaId=null;
+let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',periodo='mes',pagoTareaId=null;
 
 function fmt(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -371,19 +367,50 @@ function inPeriodo(iso){
 }
 
 // ── PROCESOS CHIPS ────────────────────────────────────
+function renderProcChips(){
+  const grid=document.getElementById('proc-grid');
+  if(!procesos.length){grid.innerHTML='<span style="color:var(--tx3);font-size:12px">Sin procesos activos</span>';return;}
+  grid.innerHTML=procesos.map(p=>`<div class="proc-chip" data-value="${p.nombre}" onclick="toggleProc(this)"><i class="ti ${p.icono||'ti-settings'}" style="font-size:12px"></i> ${p.nombre}</div>`).join('');
+  // rebuild material select
+  const sel=document.getElementById('f-mat-id');
+  if(!sel)return;
+  const cats=[...new Set(materiales.map(m=>m.categoria))].filter(Boolean);
+  sel.innerHTML='<option value="">— Seleccionar —</option>';
+  cats.forEach(cat=>{
+    const grp=document.createElement('optgroup');
+    grp.label=cat;
+    materiales.filter(m=>m.categoria===cat).forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m.id;
+      opt.dataset.nombre=m.nombre;
+      opt.dataset.espesor=m.espesor||'';
+      opt.textContent=m.nombre+(m.espesor?' '+m.espesor:'');
+      grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+function onMatChange(){
+  // auto-fill espesor in medidas hint if empty
+  const sel=document.getElementById('f-mat-id');
+  const opt=sel.options[sel.selectedIndex];
+  // nothing extra needed for now
+}
 function toggleProc(el){ el.classList.toggle('selected'); }
 function getProcesos(){ return [...document.querySelectorAll('.proc-chip.selected')].map(c=>c.dataset.value); }
 function resetProcesos(){ document.querySelectorAll('.proc-chip').forEach(c=>c.classList.remove('selected')); }
 
 // ── DATOS ─────────────────────────────────────────────
 async function cargarTodo(){
-  const [{data:t,error:e1},{data:c,error:e2}]=await Promise.all([
+  const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4}]=await Promise.all([
     sb.from('trabajos').select('*, clientes(nombre,telefono)').eq('archivado',false).order('fecha',{ascending:false}),
-    sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre')
+    sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre'),
+    sb.from('materiales').select('*').eq('activo',true).order('categoria').order('nombre').order('espesor'),
+    sb.from('procesos').select('*').eq('activo',true).order('orden')
   ]);
   if(e1){showToast('Error: '+e1.message,true);return;}
-  tareas=t||[];clientes=c||[];
-  renderTabla();updateFin();updateStats();
+  tareas=t||[];clientes=c||[];materiales=m||[];procesos=p||[];
+  renderTabla();updateFin();updateStats();renderProcChips();
 }
 
 function updateStats(){
@@ -615,10 +642,11 @@ function openModal(w){document.getElementById('overlay-'+w).classList.add('open'
 function closeModal(w){
   document.getElementById('overlay-'+w).classList.remove('open');
   if(w==='nuevo'){
-    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-det','f-med','f-cuit'].forEach(id=>{
+    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-med','f-cuit'].forEach(id=>{
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
     document.getElementById('f-pago').value='';
+    const ms=document.getElementById('f-mat-id');if(ms)ms.value='';
     document.getElementById('f-total').textContent='$0';
     document.getElementById('f-saldo-calc').textContent='$0';
     resetProcesos();
@@ -644,9 +672,12 @@ async function guardarTarea(){
   const sena=parseFloat(document.getElementById('f-sena').value)||0;
   const total=qty*precio,saldo=total-sena;
   // Construir detalles: material + procesos
-  const matDet=document.getElementById('f-det').value.trim();
+  const sel=document.getElementById('f-mat-id');
+  const opt=sel?sel.options[sel.selectedIndex]:null;
+  const matNombre=opt&&opt.value?(opt.dataset.nombre+(opt.dataset.espesor?' '+opt.dataset.espesor:'')):'';
   const procs=getProcesos();
-  const detalles=[matDet,procs.join(', ')].filter(Boolean).join(', ');
+  const detalles=[matNombre,...procs].filter(Boolean).join(', ');
+  const matId=opt?.value||null;
   let clienteId=document.getElementById('f-cli').dataset.clienteId;
   if(!clienteId){
     const {data:cE}=await sb.from('clientes').select('id').ilike('nombre',cli).limit(1).single();
@@ -660,8 +691,9 @@ async function guardarTarea(){
   const numero=String(maxNum+1).padStart(5,'0');
   const {data,error}=await sb.from('trabajos').insert({
     numero,estado:'pendiente',descripcion:desc,cliente_id:clienteId,
-    detalles,cantidad:qty,precio_unit:precio,sena,total,saldo,
+    detalles,material_id:matId||null,proceso_ids:procs.length?procs:null,
     medidas:document.getElementById('f-med').value,
+    cantidad:qty,precio_unit:precio,sena,total,saldo,
     medio_pago:document.getElementById('f-pago').value,
     cuit:document.getElementById('f-cuit').value,
   }).select('*, clientes(nombre,telefono)').single();
