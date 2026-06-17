@@ -71,7 +71,7 @@ table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:1400px}
 thead th{padding:9px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);background:var(--s2);border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
 /* col widths */
 .c-chk{width:32px}.c-fecha{width:70px}.c-id{width:62px}.c-estado{width:80px}
-.c-desc{width:160px}.c-cli{width:120px}.c-tel{width:95px}.c-det{display:none}.c-proc{width:160px}.c-med{width:110px}
+.c-desc{width:160px}.c-cli{width:120px}.c-tel{width:95px}.c-det{display:none}.c-proc{width:160px}.c-mat{width:120px}.c-med{width:100px}
 .c-cant{width:48px}.c-precio{width:80px}.c-sena{width:80px}.c-total{width:80px}
 .c-pago{width:55px}.c-saldo{width:80px}.c-fac{width:36px}.c-pagochk{width:36px}
 .c-retiro{width:44px}.c-listo{width:38px}.c-cuit{width:110px}.c-act{width:36px}
@@ -247,6 +247,7 @@ tbody tr:last-child td{border-bottom:none}
             <th class="c-cli">Cliente</th>
             <th class="c-tel">Contacto</th>
             <th class="c-proc">Procesos</th>
+            <th class="c-mat">Material</th>
             <th class="c-med">Medidas</th>
             <th class="c-cant">Cant</th>
             <th class="c-precio">P.Unit</th>
@@ -386,7 +387,7 @@ function resetProcesos(){ document.querySelectorAll('.proc-chip').forEach(c=>c.c
 // ── DATOS ─────────────────────────────────────────────
 async function cargarTodo(){
   const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4}]=await Promise.all([
-    sb.from('trabajos').select('*, clientes(nombre,telefono)').eq('archivado',false).order('fecha',{ascending:false}),
+    sb.from('trabajos').select('*, clientes(nombre,telefono), materiales(nombre,espesor)').eq('archivado',false).order('fecha',{ascending:false}),
     sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre'),
     sb.from('materiales').select('*').eq('activo',true).order('categoria').order('nombre').order('espesor'),
     sb.from('procesos').select('*').eq('activo',true).order('orden')
