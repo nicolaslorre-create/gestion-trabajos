@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor — Gestión de Trabajos</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --bg:#F7F6F3;--surface:#fff;--s2:#F3F2EF;--bd:rgba(0,0,0,0.1);
+  --tx:#1A1A18;--tx2:#6B6B67;--tx3:#A8A8A4;
+  --or:#E8711A;--orl:#FFF2E8;--ort:#8B3F00;
+  --gn:#6AA84F;--gnl:#F0F7EA;--gnt:#2D5A1B;
+  --r:8px;--rl:12px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;font-size:14px}
+.topbar{background:var(--surface);border-bottom:1px solid var(--bd);height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:50}
+.brand{display:flex;align-items:center;gap:10px}
+.brand-icon{width:32px;height:32px;background:var(--or);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px}
+.brand-name{font-size:16px;font-weight:600;letter-spacing:-.4px}
+.back-btn{display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--bd);border-radius:var(--r);font-size:13px;color:var(--tx2);text-decoration:none;background:var(--s2);font-family:'DM Sans',sans-serif}
+.back-btn:hover{background:#EBEBEB}
+
+.main{padding:24px;max-width:1100px;margin:0 auto}
+.page-title{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:6px}
+.page-sub{font-size:13px;color:var(--tx2);margin-bottom:24px}
+
+/* TABS */
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--bd);margin-bottom:24px}
+.tab{padding:10px 20px;font-size:14px;font-weight:500;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--or);border-bottom-color:var(--or)}
+
+.section{display:none}.section.active{display:block}
+
+/* CARDS */
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.section-title{font-size:16px;font-weight:600}
+.btn-add{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer}
+.btn-add:hover{background:#D4611A}
+
+/* TABLE */
+.table-card{background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:24px}
+table{width:100%;border-collapse:collapse}
+thead th{padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);background:var(--s2);border-bottom:1px solid var(--bd);text-align:left}
+tbody td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--bd);vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--s2)}
+
+/* TOGGLE */
+.toggle{position:relative;width:36px;height:20px;display:inline-block}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#CCC;border-radius:20px;cursor:pointer;transition:.2s}
+.toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked+.toggle-slider{background:var(--gn)}
+.toggle input:checked+.toggle-slider::before{transform:translateX(16px)}
+
+/* ICON CHIP */
+.proc-chip-preview{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
+.cat-badge{display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:var(--s2);color:var(--tx2)}
+
+/* ICON PICKER */
+.icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+.icon-opt{width:40px;height:40px;border-radius:var(--r);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .15s}
+.icon-opt:hover{border-color:var(--or);color:var(--or)}
+.icon-opt.selected{border-color:var(--or);background:var(--orl);color:var(--or)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--surface);border-radius:var(--rl);border:1px solid var(--bd);padding:28px;width:480px;max-width:95vw;transform:translateY(12px);transition:transform .2s;max-height:90vh;overflow-y:auto}
+.overlay.open .modal{transform:translateY(0)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-size:16px;font-weight:600}
+.modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);cursor:pointer}
+.fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.ff{grid-column:1/-1}
+.fg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:5px}
+.fg input,.fg select{width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;transition:border-color .15s}
+.fg input:focus,.fg select:focus{border-color:var(--or)}
+.modal-footer{display:flex;justify-content:space-between;align-items:center;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd)}
+.modal-footer-right{display:flex;gap:8px}
+.btn-cancel{padding:8px 16px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx2);cursor:pointer}
+.btn-save{padding:8px 18px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
+.btn-save:hover{background:#D4611A}
+.btn-delete{padding:8px 14px;border:1px solid #F5C0C0;border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:#C0392B;cursor:pointer;display:flex;align-items:center;gap:5px}
+.btn-delete:hover{background:#FFF0F0}
+.btn-icon{width:30px;height:30px;border-radius:6px;border:1px solid var(--bd);background:transparent;display:inline-flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);cursor:pointer}
+.btn-icon:hover{background:var(--s2)}
+
+.empty{text-align:center;padding:32px;color:var(--tx3);font-size:13px}
+.toast{position:fixed;bottom:24px;right:24px;background:#1A1A18;color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:600;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}.toast.error{background:#C0392B}
+
+/* PRECIO CON MARGEN */
+.margen-preview{background:var(--gnl);border:1px solid #AADDA0;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--gnt);display:none}
+
+@media(max-width:700px){.main{padding:14px}.fg{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-icon"><i class="ti ti-settings"></i></div>
+    <span class="brand-name">Editor</span>
+  </div>
+  <a href="index.html" class="back-btn"><i class="ti ti-arrow-left" style="font-size:15px"></i> Volver a trabajos</a>
+</div>
+
+<div class="main">
+  <div class="page-title">Editor de catálogos</div>
+  <div class="page-sub">Administrá materiales, procesos y su configuración. Los cambios se reflejan en el formulario de nueva tarea.</div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="setTab('materiales',this)"><i class="ti ti-stack-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Materiales</div>
+    <div class="tab" onclick="setTab('procesos',this)"><i class="ti ti-settings-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Procesos</div>
+  </div>
+
+  <!-- MATERIALES -->
+  <div class="section active" id="sec-materiales">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Materiales e insumos</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Aparecen en el selector del formulario de nueva tarea</div>
+      </div>
+      <button class="btn-add" onclick="openMaterial()"><i class="ti ti-plus"></i> Agregar material</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Espesor</th>
+            <th>Categoría</th>
+            <th>P. Costo</th>
+            <th>P. Lista</th>
+            <th>Margen</th>
+            <th style="width:60px;text-align:center">Activo</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-mat"><tr><td colspan="8" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PROCESOS -->
+  <div class="section" id="sec-procesos">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Procesos</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Los activos aparecen como chips seleccionables en nueva tarea</div>
+      </div>
+      <button class="btn-add" onclick="openProceso()"><i class="ti ti-plus"></i> Agregar proceso</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Proceso</th>
+            <th>Ícono</th>
+            <th style="width:60px;text-align:center">Orden</th>
+            <th style="width:80px;text-align:center">Activo</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-proc"><tr><td colspan="5" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL MATERIAL -->
+<div class="overlay" id="overlay-mat" onclick="if(event.target===this)closeModal('mat')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="mat-modal-title">Nuevo Material</div>
+      <button class="modal-close" onclick="closeModal('mat')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg">
+      <div class="ff"><label>Nombre</label><input type="text" id="mat-nombre" placeholder="Acero 304, Acrilico, Mates..."></div>
+      <div><label>Espesor</label><input type="text" id="mat-espesor" placeholder="4mm, 1.5mm..."></div>
+      <div>
+        <label>Categoría</label>
+        <select id="mat-categoria">
+          <option value="Metal">Metal</option>
+          <option value="Acrilico">Acrilico</option>
+          <option value="Madera">Madera</option>
+          <option value="Plastico">Plastico</option>
+          <option value="Piedra">Piedra</option>
+          <option value="Insumo">Insumo</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div><label>Unidad</label><input type="text" id="mat-unidad" placeholder="mm, cm, m2..." value="mm"></div>
+      <div><label>Precio Costo</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Precio Lista</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen()"></div>
+      <div class="ff margen-preview" id="margen-preview"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-delete" id="mat-btn-delete" style="display:none" onclick="deleteMaterial()"><i class="ti ti-trash"></i> Eliminar</button>
+      <div class="modal-footer-right">
+        <button class="btn-cancel" onclick="closeModal('mat')">Cancelar</button>
+        <button class="btn-save" onclick="guardarMaterial()"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL PROCESO -->
+<div class="overlay" id="overlay-proc" onclick="if(event.target===this)closeModal('proc')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="proc-modal-title">Nuevo Proceso</div>
+      <button class="modal-close" onclick="closeModal('proc')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg">
+      <div class="ff"><label>Nombre</label><input type="text" id="proc-nombre" placeholder="DTF, Grabado, Corte..."></div>
+      <div class="ff">
+        <label>Ícono</label>
+        <div class="icon-grid" id="icon-grid">
+          <div class="icon-opt selected" data-icon="ti-printer" onclick="selIcon(this)"><i class="ti ti-printer"></i></div>
+          <div class="icon-opt" data-icon="ti-pencil" onclick="selIcon(this)"><i class="ti ti-pencil"></i></div>
+          <div class="icon-opt" data-icon="ti-cut" onclick="selIcon(this)"><i class="ti ti-cut"></i></div>
+          <div class="icon-opt" data-icon="ti-layers" onclick="selIcon(this)"><i class="ti ti-layers"></i></div>
+          <div class="icon-opt" data-icon="ti-moon" onclick="selIcon(this)"><i class="ti ti-moon"></i></div>
+          <div class="icon-opt" data-icon="ti-tools" onclick="selIcon(this)"><i class="ti ti-tools"></i></div>
+          <div class="icon-opt" data-icon="ti-palette" onclick="selIcon(this)"><i class="ti ti-palette"></i></div>
+          <div class="icon-opt" data-icon="ti-target" onclick="selIcon(this)"><i class="ti ti-target"></i></div>
+          <div class="icon-opt" data-icon="ti-flame" onclick="selIcon(this)"><i class="ti ti-flame"></i></div>
+          <div class="icon-opt" data-icon="ti-bolt" onclick="selIcon(this)"><i class="ti ti-bolt"></i></div>
+          <div class="icon-opt" data-icon="ti-droplet" onclick="selIcon(this)"><i class="ti ti-droplet"></i></div>
+          <div class="icon-opt" data-icon="ti-wand" onclick="selIcon(this)"><i class="ti ti-wand"></i></div>
+          <div class="icon-opt" data-icon="ti-scan" onclick="selIcon(this)"><i class="ti ti-scan"></i></div>
+          <div class="icon-opt" data-icon="ti-brush" onclick="selIcon(this)"><i class="ti ti-brush"></i></div>
+          <div class="icon-opt" data-icon="ti-scissors" onclick="selIcon(this)"><i class="ti ti-scissors"></i></div>
+          <div class="icon-opt" data-icon="ti-hammer" onclick="selIcon(this)"><i class="ti ti-hammer"></i></div>
+          <div class="icon-opt" data-icon="ti-sparkles" onclick="selIcon(this)"><i class="ti ti-sparkles"></i></div>
+          <div class="icon-opt" data-icon="ti-vector" onclick="selIcon(this)"><i class="ti ti-vector"></i></div>
+        </div>
+      </div>
+      <div><label>Orden</label><input type="number" id="proc-orden" value="0" min="0"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-delete" id="proc-btn-delete" style="display:none" onclick="deleteProceso()"><i class="ti ti-trash"></i> Eliminar</button>
+      <div class="modal-footer-right">
+        <button class="btn-cancel" onclick="closeModal('proc')">Cancelar</button>
+        <button class="btn-save" onclick="guardarProceso()"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
+
+<script>
+const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+let materiales=[], procesos=[];
+let editMatId=null, editProcId=null;
+
+const CAT_COLORS={
+  'Metal':'#E6EEF8','Acrilico':'#EAF3DE','Madera':'#FFF0DC',
+  'Plastico':'#EEF3FB','Piedra':'#F0EDEA','Insumo':'#F3F2EF','Otro':'#F3F2EF'
+};
+const CAT_TC={
+  'Metal':'#0C3D8A','Acrilico':'#27500A','Madera':'#7A4800',
+  'Plastico':'#3C3489','Piedra':'#4A4040','Insumo':'#5F5E5A','Otro':'#5F5E5A'
+};
+
+function fmt(n){if(!n||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
+
+// ── TABS ──────────────────────────────────────────────
+function setTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+}
+
+// ── CARGAR ────────────────────────────────────────────
+async function cargarTodo(){
+  const [{data:m},{data:p}]=await Promise.all([
+    sb.from('materiales').select('*').order('categoria').order('nombre').order('espesor'),
+    sb.from('procesos').select('*').order('orden')
+  ]);
+  materiales=m||[]; procesos=p||[];
+  renderMateriales(); renderProcesos();
+}
+
+// ── MATERIALES ────────────────────────────────────────
+function renderMateriales(){
+  const tbody=document.getElementById('tbody-mat');
+  if(!materiales.length){tbody.innerHTML='<tr><td colspan="8" class="empty">No hay materiales aún</td></tr>';return;}
+  tbody.innerHTML=materiales.map(m=>{
+    const margen=m.precio_costo>0&&m.precio_lista>0
+      ?Math.round((m.precio_lista-m.precio_costo)/m.precio_costo*100)+'%' : '—';
+    const cc=CAT_COLORS[m.categoria]||CAT_COLORS['Otro'];
+    const ct=CAT_TC[m.categoria]||CAT_TC['Otro'];
+    return `<tr>
+      <td style="font-weight:500">${m.nombre}</td>
+      <td style="color:var(--tx2)">${m.espesor||'—'}</td>
+      <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${cc};color:${ct}">${m.categoria||'—'}</span></td>
+      <td>${fmt(m.precio_costo)}</td>
+      <td>${fmt(m.precio_lista)}</td>
+      <td style="color:var(--gnt);font-weight:500">${margen}</td>
+      <td style="text-align:center">
+        <label class="toggle"><input type="checkbox" ${m.activo?'checked':''} onchange="toggleMaterial('${m.id}',this.checked)"><span class="toggle-slider"></span></label>
+      </td>
+      <td style="text-align:center">
+        <button class="btn-icon" onclick="openMaterial('${m.id}')"><i class="ti ti-pencil"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openMaterial(id){
+  editMatId=id||null;
+  const m=id?materiales.find(x=>x.id===id):null;
+  document.getElementById('mat-modal-title').textContent=m?'Editar Material':'Nuevo Material';
+  document.getElementById('mat-nombre').value=m?.nombre||'';
+  document.getElementById('mat-espesor').value=m?.espesor||'';
+  document.getElementById('mat-categoria').value=m?.categoria||'Metal';
+  document.getElementById('mat-unidad').value=m?.unidad||'mm';
+  document.getElementById('mat-costo').value=m?.precio_costo||'';
+  document.getElementById('mat-lista').value=m?.precio_lista||'';
+  document.getElementById('mat-btn-delete').style.display=m?'flex':'none';
+  document.getElementById('margen-preview').style.display='none';
+  document.getElementById('overlay-mat').classList.add('open');
+  setTimeout(()=>document.getElementById('mat-nombre').focus(),100);
+}
+
+function calcMargen(){
+  const costo=parseFloat(document.getElementById('mat-costo').value)||0;
+  const lista=parseFloat(document.getElementById('mat-lista').value)||0;
+  const el=document.getElementById('margen-preview');
+  if(costo>0&&lista>0){
+    const m=Math.round((lista-costo)/costo*100);
+    el.style.display='block';
+    el.innerHTML=`<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>${m}%</strong> — ganancia ${fmt(lista-costo)} por unidad`;
+    el.style.color=m>0?'var(--gnt)':'#C0392B';
+    el.style.background=m>0?'var(--gnl)':'#FFF0F0';
+    el.style.borderColor=m>0?'#AADDA0':'#F5C0C0';
+  } else { el.style.display='none'; }
+}
+
+async function guardarMaterial(){
+  const nombre=document.getElementById('mat-nombre').value.trim();
+  if(!nombre){showToast('Ingresá un nombre',true);return;}
+  const payload={
+    nombre,
+    espesor:document.getElementById('mat-espesor').value.trim(),
+    categoria:document.getElementById('mat-categoria').value,
+    unidad:document.getElementById('mat-unidad').value.trim(),
+    precio_costo:parseFloat(document.getElementById('mat-costo').value)||0,
+    precio_lista:parseFloat(document.getElementById('mat-lista').value)||0,
+    activo:true
+  };
+  let error;
+  if(editMatId){
+    ({error}=await sb.from('materiales').update(payload).eq('id',editMatId));
+  } else {
+    ({error}=await sb.from('materiales').insert(payload));
+  }
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('mat');
+  await cargarTodo();
+  showToast(editMatId?'Material actualizado':'Material creado');
+}
+
+async function toggleMaterial(id,val){
+  const {error}=await sb.from('materiales').update({activo:val}).eq('id',id);
+  if(error){showToast('Error: '+error.message,true);return;}
+  const m=materiales.find(x=>x.id===id);
+  if(m) m.activo=val;
+}
+
+async function deleteMaterial(){
+  if(!confirm('¿Eliminar este material?'))return;
+  const {error}=await sb.from('materiales').delete().eq('id',editMatId);
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('mat');
+  await cargarTodo();
+  showToast('Material eliminado');
+}
+
+// ── PROCESOS ──────────────────────────────────────────
+function renderProcesos(){
+  const tbody=document.getElementById('tbody-proc');
+  if(!procesos.length){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay procesos aún</td></tr>';return;}
+  tbody.innerHTML=procesos.map(p=>`<tr>
+    <td>
+      <span class="proc-chip-preview" style="background:#F3F2EF;color:#5F5E5A">
+        <i class="ti ${p.icono||'ti-settings'}" style="font-size:13px"></i>${p.nombre}
+      </span>
+    </td>
+    <td style="color:var(--tx2)"><i class="ti ${p.icono||'ti-settings'}" style="font-size:16px"></i> <span style="font-size:11px;color:var(--tx3)">${p.icono||'—'}</span></td>
+    <td style="text-align:center;color:var(--tx2)">${p.orden}</td>
+    <td style="text-align:center">
+      <label class="toggle"><input type="checkbox" ${p.activo?'checked':''} onchange="toggleProceso('${p.id}',this.checked)"><span class="toggle-slider"></span></label>
+    </td>
+    <td style="text-align:center">
+      <button class="btn-icon" onclick="openProceso('${p.id}')"><i class="ti ti-pencil"></i></button>
+    </td>
+  </tr>`).join('');
+}
+
+function openProceso(id){
+  editProcId=id||null;
+  const p=id?procesos.find(x=>x.id===id):null;
+  document.getElementById('proc-modal-title').textContent=p?'Editar Proceso':'Nuevo Proceso';
+  document.getElementById('proc-nombre').value=p?.nombre||'';
+  document.getElementById('proc-orden').value=p?.orden??procesos.length;
+  // select icon
+  const iconSel=p?.icono||'ti-printer';
+  document.querySelectorAll('.icon-opt').forEach(el=>{
+    el.classList.toggle('selected',el.dataset.icon===iconSel);
+  });
+  document.getElementById('proc-btn-delete').style.display=p?'flex':'none';
+  document.getElementById('overlay-proc').classList.add('open');
+  setTimeout(()=>document.getElementById('proc-nombre').focus(),100);
+}
+
+function selIcon(el){
+  document.querySelectorAll('.icon-opt').forEach(e=>e.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+async function guardarProceso(){
+  const nombre=document.getElementById('proc-nombre').value.trim();
+  if(!nombre){showToast('Ingresá un nombre',true);return;}
+  const icono=document.querySelector('.icon-opt.selected')?.dataset.icon||'ti-settings';
+  const payload={
+    nombre,
+    icono,
+    orden:parseInt(document.getElementById('proc-orden').value)||0,
+    activo:true
+  };
+  let error;
+  if(editProcId){
+    ({error}=await sb.from('procesos').update(payload).eq('id',editProcId));
+  } else {
+    ({error}=await sb.from('procesos').insert(payload));
+  }
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('proc');
+  await cargarTodo();
+  showToast(editProcId?'Proceso actualizado':'Proceso creado');
+}
+
+async function toggleProceso(id,val){
+  const {error}=await sb.from('procesos').update({activo:val}).eq('id',id);
+  if(error){showToast('Error: '+error.message,true);return;}
+  const p=procesos.find(x=>x.id===id);
+  if(p) p.activo=val;
+}
+
+async function deleteProceso(){
+  if(!confirm('¿Eliminar este proceso?'))return;
+  const {error}=await sb.from('procesos').delete().eq('id',editProcId);
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('proc');
+  await cargarTodo();
+  showToast('Proceso eliminado');
+}
+
+// ── HELPERS ───────────────────────────────────────────
+function closeModal(w){document.getElementById('overlay-'+w).classList.remove('open');}
+function showToast(msg,error){
+  const t=document.getElementById('toast');
+  document.getElementById('toast-msg').textContent=msg;
+  t.className='toast'+(error?' error':'');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+cargarTodo();
+</script>
+</body>
+</html>
