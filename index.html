@@ -423,13 +423,25 @@ const PROC_ICONS={
   'MH':'ti-layers','BLACK':'ti-moon','IMARNE':'ti-tools',
   'GRAFIKARTE':'ti-palette','DARDO':'ti-target'
 };
-function buildProcChips(detalles){
-  if(!detalles)return'<span style="color:var(--tx3)">—</span>';
+const KNOWN_PROCS=Object.keys(PROC_CLASSES);
+
+function parseDetalles(detalles){
+  if(!detalles) return {procs:[], medidas:''};
   const tokens=detalles.split(',').map(s=>s.trim()).filter(Boolean);
-  const known=Object.keys(PROC_CLASSES);
-  const procs=tokens.filter(t=>known.includes(t));
-  if(!procs.length)return`<span style="color:var(--tx2);font-size:11px">${detalles}</span>`;
+  const procs=tokens.filter(t=>KNOWN_PROCS.includes(t));
+  const medidas=tokens.filter(t=>!KNOWN_PROCS.includes(t)).join(', ');
+  return {procs, medidas};
+}
+function buildProcChips(detalles){
+  const {procs}=parseDetalles(detalles);
+  if(!procs.length) return'<span style="color:var(--tx3)">—</span>';
   return'<div class="proc-chips">'+procs.map(p=>`<span class="pc ${PROC_CLASSES[p]}"><i class="ti ${PROC_ICONS[p]}" style="font-size:9px"></i>${p}</span>`).join('')+'</div>';
+}
+function buildMedidas(t){
+  // Priorizar campo medidas propio, si está vacío extraer de detalles
+  if(t.medidas) return t.medidas;
+  const {medidas}=parseDetalles(t.detalles);
+  return medidas||'—';
 }
 function renderTabla(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
@@ -481,7 +493,7 @@ function renderTabla(){
         <td title="${cli}">${cli}</td>
         <td title="${tel}" style="color:var(--tx2)">${tel}</td>
         <td>${buildProcChips(t.detalles)}</td>
-        <td style="color:var(--tx2);font-size:11px" title="${t.medidas||''}">${t.medidas||'—'}</td>
+        <td style="color:var(--tx2);font-size:11px" title="${buildMedidas(t)}">${buildMedidas(t)}</td>
         <td style="text-align:center">${t.cantidad||1}</td>
         <td>${fmt(t.precio_unit)}</td>
         <td>${fmt(t.sena)}</td>
