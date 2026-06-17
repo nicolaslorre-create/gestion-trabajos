@@ -71,7 +71,7 @@ table{width:100%;border-collapse:collapse;table-layout:fixed;min-width:1400px}
 thead th{padding:9px 10px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);background:var(--s2);border-bottom:1px solid var(--bd);text-align:left;white-space:nowrap}
 /* col widths */
 .c-chk{width:32px}.c-fecha{width:70px}.c-id{width:62px}.c-estado{width:80px}
-.c-desc{width:160px}.c-cli{width:120px}.c-tel{width:95px}.c-det{width:140px}
+.c-desc{width:160px}.c-cli{width:120px}.c-tel{width:95px}.c-det{display:none}.c-proc{width:160px}.c-med{width:110px}
 .c-cant{width:48px}.c-precio{width:80px}.c-sena{width:80px}.c-total{width:80px}
 .c-pago{width:55px}.c-saldo{width:80px}.c-fac{width:36px}.c-pagochk{width:36px}
 .c-retiro{width:44px}.c-listo{width:38px}.c-cuit{width:110px}.c-act{width:36px}
@@ -143,6 +143,17 @@ tbody tr:last-child td{border-bottom:none}
 .proc-chip:hover{border-color:var(--or);color:var(--ort)}
 .proc-chip.selected{background:var(--or);border-color:var(--or);color:#fff}
 .proc-chip input{display:none}
+.proc-chips{display:flex;flex-wrap:wrap;gap:4px}
+.pc{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:500;white-space:nowrap}
+.pc-dtf{background:#E6F1FB;color:#0C447C}
+.pc-grab{background:#EAF3DE;color:#27500A}
+.pc-novo{background:#FAEEDA;color:#633806}
+.pc-mh{background:#EEEDFE;color:#3C3489}
+.pc-black{background:#D3D1C7;color:#2C2C2A}
+.pc-imarne{background:#FBEAF0;color:#72243E}
+.pc-grafikarte{background:#E1F5EE;color:#085041}
+.pc-dardo{background:#FAECE7;color:#993C1D}
+.pc-default{background:#F3F2EF;color:#5F5E5A}
 
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd)}
 .btn-cancel{padding:8px 16px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx2);cursor:pointer}
@@ -234,7 +245,8 @@ tbody tr:last-child td{border-bottom:none}
             <th class="c-desc">Descripción</th>
             <th class="c-cli">Cliente</th>
             <th class="c-tel">Contacto</th>
-            <th class="c-det">Detalles</th>
+            <th class="c-proc">Procesos</th>
+            <th class="c-med">Medidas</th>
             <th class="c-cant">Cant</th>
             <th class="c-precio">P.Unit</th>
             <th class="c-sena">Seña</th>
@@ -277,7 +289,8 @@ tbody tr:last-child td{border-bottom:none}
         </div>
         <div><label>Teléfono</label><input type="text" id="f-tel" placeholder="291..."></div>
       </div>
-      <div><label>Material / Detalles</label><input type="text" id="f-det" placeholder="Acrilico 4mm, Med: 30x20cm..."></div>
+      <div><label>Material / Detalles</label><input type="text" id="f-det" placeholder="Acrilico 4mm..."></div>
+      <div><label>Medidas / Espesor</label><input type="text" id="f-med" placeholder="30x20cm, 1.5mm..."></div>
       <div>
         <label>Procesos</label>
         <div class="proc-grid" id="proc-grid">
@@ -400,6 +413,24 @@ function chkHtml(checked,cls,clickFn){
   return `<div ${click}>${icon}</div>`;
 }
 
+const PROC_CLASSES={
+  'DTF':'pc-dtf','Grabado':'pc-grab','NOVOCORTE':'pc-novo',
+  'MH':'pc-mh','BLACK':'pc-black','IMARNE':'pc-imarne',
+  'GRAFIKARTE':'pc-grafikarte','DARDO':'pc-dardo'
+};
+const PROC_ICONS={
+  'DTF':'ti-printer','Grabado':'ti-pencil','NOVOCORTE':'ti-cut',
+  'MH':'ti-layers','BLACK':'ti-moon','IMARNE':'ti-tools',
+  'GRAFIKARTE':'ti-palette','DARDO':'ti-target'
+};
+function buildProcChips(detalles){
+  if(!detalles)return'<span style="color:var(--tx3)">—</span>';
+  const tokens=detalles.split(',').map(s=>s.trim()).filter(Boolean);
+  const known=Object.keys(PROC_CLASSES);
+  const procs=tokens.filter(t=>known.includes(t));
+  if(!procs.length)return`<span style="color:var(--tx2);font-size:11px">${detalles}</span>`;
+  return'<div class="proc-chips">'+procs.map(p=>`<span class="pc ${PROC_CLASSES[p]}"><i class="ti ${PROC_ICONS[p]}" style="font-size:9px"></i>${p}</span>`).join('')+'</div>';
+}
 function renderTabla(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
   const body=document.getElementById('tbody');
@@ -425,17 +456,19 @@ function renderTabla(){
       const isComp=t.estado==='completado';
       const isCerr=t.estado==='cerrado';
       // checkbox estado: pendiente → clickable para completar
-      const chkEst=isPend
-        ?chkHtml(false,'',`cambiarEstado('${t.id}','completado')`)
-        :chkHtml(true,g.chkEstCls,'');
+      let chkEst;
+      if(isPend) chkEst=chkHtml(false,'',`cambiarEstado('${t.id}','completado')`);
+      else if(isComp) chkEst=chkHtml(true,'checked-gn',`cambiarEstado('${t.id}','pendiente')`);
+      else chkEst=chkHtml(true,g.chkEstCls,'');
       // checkboxes booleanos
       const chkFac=chkHtml(t.factura||false,'checked-or',`toggleBool('${t.id}','factura',${t.factura||false})`);
       const chkPago=chkHtml(t.pago||false,'checked-or',`toggleBool('${t.id}','pago',${t.pago||false})`);
       const chkRet=chkHtml(t.retiro||false,'checked-or',`toggleBool('${t.id}','retiro',${t.retiro||false})`);
       // listo: solo clickable si es completado
-      const chkListo=isComp
-        ?chkHtml(t.listo||false,'checked-cn',`cambiarEstado('${t.id}','cerrado')`)
-        :chkHtml(t.listo||false,'checked-cn','');
+      let chkListo;
+      if(isComp) chkListo=chkHtml(false,'',`cambiarEstado('${t.id}','cerrado')`);
+      else if(isCerr) chkListo=chkHtml(true,'checked-cn',`cambiarEstado('${t.id}','completado')`);
+      else chkListo=chkHtml(false,'checked-cn','');
       const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
       const cli=t.clientes?.nombre||'—';
       const tel=t.clientes?.telefono||'—';
@@ -447,7 +480,8 @@ function renderTabla(){
         <td title="${t.descripcion||''}">${t.descripcion||'—'}</td>
         <td title="${cli}">${cli}</td>
         <td title="${tel}" style="color:var(--tx2)">${tel}</td>
-        <td title="${t.detalles||''}" style="color:var(--tx2)">${t.detalles||'—'}</td>
+        <td>${buildProcChips(t.detalles)}</td>
+        <td style="color:var(--tx2);font-size:11px" title="${t.medidas||''}">${t.medidas||'—'}</td>
         <td style="text-align:center">${t.cantidad||1}</td>
         <td>${fmt(t.precio_unit)}</td>
         <td>${fmt(t.sena)}</td>
@@ -580,7 +614,7 @@ function openModal(w){document.getElementById('overlay-'+w).classList.add('open'
 function closeModal(w){
   document.getElementById('overlay-'+w).classList.remove('open');
   if(w==='nuevo'){
-    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-det','f-cuit'].forEach(id=>{
+    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-det','f-med','f-cuit'].forEach(id=>{
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
     document.getElementById('f-pago').value='';
@@ -626,6 +660,7 @@ async function guardarTarea(){
   const {data,error}=await sb.from('trabajos').insert({
     numero,estado:'pendiente',descripcion:desc,cliente_id:clienteId,
     detalles,cantidad:qty,precio_unit:precio,sena,total,saldo,
+    medidas:document.getElementById('f-med').value,
     medio_pago:document.getElementById('f-pago').value,
     cuit:document.getElementById('f-cuit').value,
   }).select('*, clientes(nombre,telefono)').single();
