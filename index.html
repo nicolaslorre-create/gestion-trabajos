@@ -387,7 +387,7 @@ function resetProcesos(){ document.querySelectorAll('.proc-chip').forEach(c=>c.c
 // ── DATOS ─────────────────────────────────────────────
 async function cargarTodo(){
   const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4}]=await Promise.all([
-    sb.from('trabajos').select('*, clientes(nombre,telefono), materiales(nombre,espesor)').eq('archivado',false).order('fecha',{ascending:false}),
+    sb.from('trabajos').select('*, clientes(nombre,telefono), materiales!trabajos_material_id_fkey(nombre,espesor)').eq('archivado',false).order('fecha',{ascending:false}),
     sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre'),
     sb.from('materiales').select('*').eq('activo',true).order('categoria').order('nombre').order('espesor'),
     sb.from('procesos').select('*').eq('activo',true).order('orden')
