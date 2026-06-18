@@ -181,7 +181,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="brand">
     <div class="brand-icon"><i class="ti ti-bolt"></i></div>
     <span class="brand-name">Gestión de Trabajos</span>
-    <span class="brand-badge">v6.7</span>
+    <span class="brand-badge">v6.8</span>
   </div>
   <div class="topbar-right">
     <a href="editor.html" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--bd);border-radius:var(--r);font-size:13px;color:var(--tx2);text-decoration:none;background:var(--s2);font-family:'DM Sans',sans-serif"><i class="ti ti-settings" style="font-size:15px"></i>Editor</a>
@@ -441,13 +441,25 @@ function buildMatLabel(t){
   if(t.materiales) return t.materiales.nombre+(t.materiales.espesor?' '+t.materiales.espesor:'');
   return'—';
 }
-function buildProcChips(detalles){
-  if(!detalles)return'<span style="color:var(--tx3)">—</span>';
-  const tokens=detalles.split(',').map(s=>s.trim()).filter(Boolean);
-  const known=Object.keys(PROC_CLASSES);
-  const procs=tokens.filter(t=>known.includes(t));
-  if(!procs.length)return`<span style="color:var(--tx2);font-size:11px">${detalles}</span>`;
-  return'<div class="proc-chips">'+procs.map(p=>`<span class="pc ${PROC_CLASSES[p]}"><i class="ti ${PROC_ICONS[p]}" style="font-size:9px"></i>${p}</span>`).join('')+'</div>';
+function buildProcChips(t){
+  var procs=[];
+  if(t&&t.proceso_ids&&t.proceso_ids.length){
+    procs=t.proceso_ids;
+  } else if(t&&typeof t.detalles==='string'&&t.detalles){
+    var tokens=t.detalles.split(',').map(function(s){return s.trim();}).filter(Boolean);
+    var known=Object.keys(PROC_CLASSES);
+    procs=tokens.filter(function(x){return known.indexOf(x)>=0;});
+  }
+  if(!procs.length)return'<span style="color:var(--tx3)">—</span>';
+  var html='<div class="proc-chips">';
+  for(var i=0;i<procs.length;i++){
+    var p=procs[i];
+    var cls=PROC_CLASSES[p]||'pc-default';
+    var ico=PROC_ICONS[p]||'ti-settings';
+    html+='<span class="pc '+cls+'"><i class="ti '+ico+'" style="font-size:9px"></i>'+p+'</span>';
+  }
+  html+='</div>';
+  return html;
 }
 function renderTabla(){
   const q=(document.getElementById('srch').value||'').toLowerCase();
