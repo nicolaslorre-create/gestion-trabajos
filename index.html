@@ -181,7 +181,7 @@ tbody tr:last-child td{border-bottom:none}
   <div class="brand">
     <div class="brand-icon"><i class="ti ti-bolt"></i></div>
     <span class="brand-name">Gestión de Trabajos</span>
-    <span class="brand-badge">v6.8</span>
+    <span class="brand-badge">v6.9</span>
   </div>
   <div class="topbar-right">
     <a href="editor.html" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--bd);border-radius:var(--r);font-size:13px;color:var(--tx2);text-decoration:none;background:var(--s2);font-family:'DM Sans',sans-serif"><i class="ti ti-settings" style="font-size:15px"></i>Editor</a>
@@ -721,7 +721,7 @@ async function guardarTarea(){
     cantidad:qty,precio_unit:precio,sena,total,saldo,
     medio_pago:document.getElementById('f-pago').value,
     cuit:document.getElementById('f-cuit').value,
-  }).select('*, clientes(nombre,telefono)').single();
+  }).select('*, clientes(nombre,telefono), materiales!trabajos_material_id_fkey(nombre,espesor)').single();
   btn.disabled=false;
   if(error){showToast('Error: '+error.message,true);return;}
   tareas.unshift(data);
