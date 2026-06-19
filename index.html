@@ -36,17 +36,17 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .sc-num{font-size:26px;font-weight:600;letter-spacing:-1px}
 .sc.s-or .sc-num{color:var(--ort)}.sc.s-gn .sc-num{color:var(--gnt)}.sc.s-cs .sc-num{color:var(--cst)}.sc.s-cn .sc-num{color:var(--cn)}
 .sc-sub{font-size:11px;color:var(--tx3);margin-top:2px}
-.fin-section{background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);padding:16px 20px;margin-bottom:18px}
-.fin-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.fin-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3)}
+
+
+
 .period-tabs{display:flex;gap:4px}
 .ptab{padding:4px 10px;border:1px solid var(--bd);border-radius:6px;font-size:11px;font-weight:500;color:var(--tx2);background:transparent;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
 .ptab:hover{background:var(--s2)}.ptab.active{background:var(--tx);color:#fff;border-color:var(--tx)}
-.fin-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.fc{border-radius:var(--r);padding:14px 16px}
-.fc.fc-saldo{background:#FEF6EE;border:1px solid #F5C09A}
-.fc.fc-cobrado{background:#EEF6E8;border:1px solid #AADDA0}
-.fc.fc-proceso{background:#EEF3FB;border:1px solid #A8C8F8}
+
+
+
+
+
 .fc-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
 .fc.fc-saldo .fc-lbl{color:var(--cst)}.fc.fc-cobrado .fc-lbl{color:var(--gnt)}.fc.fc-proceso .fc-lbl{color:var(--cnt)}
 .fc-val{font-size:22px;font-weight:600;letter-spacing:-.5px}
@@ -198,31 +198,6 @@ tbody tr:last-child td{border-bottom:none}
     <div class="sc s-cn"><div class="sc-lbl">Cerrados s/saldo</div><div class="sc-num" id="cnt-cn">—</div><div class="sc-sub">cobrados</div></div>
   </div>
 
-  <div class="fin-section">
-    <div class="fin-header">
-      <div class="fin-title"><i class="ti ti-chart-bar" style="margin-right:6px;vertical-align:-2px"></i>Resumen financiero</div>
-      <div class="period-tabs">
-        <button class="ptab" onclick="setPeriodo('semana',this)">Esta semana</button>
-        <button class="ptab active" onclick="setPeriodo('mes',this)">Este mes</button>
-        <button class="ptab" onclick="setPeriodo('anio',this)">Este año</button>
-        <button class="ptab" onclick="setPeriodo('todo',this)">Todo</button>
-      </div>
-    </div>
-    <div class="fin-cards">
-      <div class="fc fc-saldo">
-        <div class="fc-lbl"><i class="ti ti-alert-circle" style="margin-right:4px;vertical-align:-2px"></i>Saldo a cobrar</div>
-        <div class="fc-val" id="fin-saldo">—</div><div class="fc-sub" id="fin-saldo-sub">cargando...</div>
-      </div>
-      <div class="fc fc-cobrado">
-        <div class="fc-lbl"><i class="ti ti-circle-check" style="margin-right:4px;vertical-align:-2px"></i>Cobrado en período</div>
-        <div class="fc-val" id="fin-cobrado">—</div><div class="fc-sub" id="fin-cobrado-sub">cargando...</div>
-      </div>
-      <div class="fc fc-proceso">
-        <div class="fc-lbl"><i class="ti ti-clock" style="margin-right:4px;vertical-align:-2px"></i>En proceso</div>
-        <div class="fc-val" id="fin-proceso">—</div><div class="fc-sub" id="fin-proceso-sub">cargando...</div>
-      </div>
-    </div>
-  </div>
 
   <div class="toolbar">
     <div class="toolbar-left">
@@ -355,7 +330,7 @@ const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',periodo='mes',pagoTareaId=null;
+let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',pagoTareaId=null;
 
 function fmt(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -397,7 +372,7 @@ async function cargarTodo(){
   if(e3){showToast('Error materiales: '+e3.message,true);}
   if(e4){showToast('Error procesos: '+e4.message,true);}
   tareas=t||[];clientes=c||[];materiales=m||[];procesos=p||[];
-  renderTabla();updateFin();updateStats();renderProcChips();
+  renderTabla();updateStats();renderProcChips();
 }
 
 function updateStats(){
@@ -405,18 +380,6 @@ function updateStats(){
   document.getElementById('cnt-c').textContent=tareas.filter(t=>t.estado==='completado').length;
   document.getElementById('cnt-cs').textContent=tareas.filter(t=>t.estado==='cerrado'&&t.saldo>0).length;
   document.getElementById('cnt-cn').textContent=tareas.filter(t=>t.estado==='cerrado'&&t.saldo<=0).length;
-}
-function setPeriodo(p,btn){periodo=p;document.querySelectorAll('.ptab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');updateFin();}
-function updateFin(){
-  const sa=tareas.filter(t=>t.estado==='cerrado'&&t.saldo>0);
-  const ca=tareas.filter(t=>t.estado==='cerrado'&&t.saldo<=0&&inPeriodo(t.fecha));
-  const pa=tareas.filter(t=>t.estado==='pendiente'||t.estado==='completado');
-  document.getElementById('fin-saldo').textContent=fmt(sa.reduce((a,t)=>a+(t.saldo||0),0));
-  document.getElementById('fin-saldo-sub').textContent=sa.length+' trabajos cerrados';
-  document.getElementById('fin-cobrado').textContent=fmt(ca.reduce((a,t)=>a+(t.total||0),0));
-  document.getElementById('fin-cobrado-sub').textContent=ca.length+' trabajos en el período';
-  document.getElementById('fin-proceso').textContent=fmt(pa.reduce((a,t)=>a+(t.total||0),0));
-  document.getElementById('fin-proceso-sub').textContent=pa.filter(t=>t.estado==='pendiente').length+' pendientes, '+pa.filter(t=>t.estado==='completado').length+' completados';
 }
 function setF(f,btn){filtro=f;document.querySelectorAll('.filt-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderTabla();}
 
@@ -554,7 +517,7 @@ async function cambiarEstado(id,nuevoEstado){
   const {error}=await sb.from('trabajos').update(updates).eq('id',id);
   if(error){showToast('Error: '+error.message,true);return;}
   Object.assign(t,updates);
-  renderTabla();updateStats();updateFin();
+  renderTabla();updateStats();
   const labels={completado:'Completado',cerrado:'Cerrado',pendiente:'Pendiente'};
   showToast(t.numero+' → '+labels[nuevoEstado]);
 }
@@ -619,7 +582,7 @@ async function guardarPago(){
   btn.disabled=false;
   if(error){showToast('Error: '+error.message,true);return;}
   t.saldo=nuevoSaldo;t.sena=nuevaSena;
-  closeModal('pago');renderTabla();updateStats();updateFin();
+  closeModal('pago');renderTabla();updateStats();
   showToast('Pago '+fmt(monto)+' registrado. Saldo: '+fmt(nuevoSaldo));
 }
 
@@ -726,7 +689,7 @@ async function guardarTarea(){
   btn.disabled=false;
   if(error){showToast('Error: '+error.message,true);return;}
   tareas.unshift(data);
-  closeModal('nuevo');renderTabla();updateStats();updateFin();
+  closeModal('nuevo');renderTabla();updateStats();
   showToast('Tarea '+numero+' creada');
 }
 
