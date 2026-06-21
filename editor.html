@@ -121,6 +121,7 @@ tbody tr:hover td{background:var(--s2)}
   <div class="tabs">
     <div class="tab active" onclick="setTab('materiales',this)"><i class="ti ti-stack-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Materiales</div>
     <div class="tab" onclick="setTab('procesos',this)"><i class="ti ti-settings-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Procesos</div>
+    <div class="tab" id="tab-usuarios" onclick="setTab('usuarios',this)"><i class="ti ti-users" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Usuarios</div>
   </div>
 
   <!-- MATERIALES -->
@@ -258,6 +259,43 @@ tbody tr:hover td{background:var(--s2)}
   </div>
 </div>
 
+
+<!-- MODAL USUARIO -->
+<div class="overlay" id="overlay-user" onclick="if(event.target===this)closeModal('user')">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="user-modal-title">Nuevo Usuario</div>
+      <button class="modal-close" onclick="closeModal('user')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg">
+      <div class="ff"><label>Nombre completo</label><input type="text" id="user-nombre" placeholder="Juan García"></div>
+      <div class="ff"><label>Email</label><input type="email" id="user-email" placeholder="juan@email.com"></div>
+      <div id="user-pass-wrap">
+        <label>Contraseña temporal</label>
+        <input type="text" id="user-pass" placeholder="mínimo 6 caracteres" value="12345678">
+      </div>
+      <div>
+        <label>Rol</label>
+        <select id="user-rol">
+          <option value="operador">Operador — solo carga trabajos</option>
+          <option value="administrador">Administrador — editor + completar</option>
+          <option value="propietario">Propietario — acceso total</option>
+        </select>
+      </div>
+      <div class="ff" style="background:#EEF3FB;border:1px solid #A8C8F8;border-radius:var(--r);padding:12px;font-size:12px;color:#0C3D8A">
+        <i class="ti ti-info-circle" style="margin-right:6px;vertical-align:-2px"></i>
+        El nuevo usuario recibirá el email y contraseña por otro medio. Puede cambiar su contraseña después desde su perfil.
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-delete" id="user-btn-delete" style="display:none" onclick="deleteUsuario()"><i class="ti ti-trash"></i> Eliminar</button>
+      <div class="modal-footer-right">
+        <button class="btn-cancel" onclick="closeModal('user')">Cancelar</button>
+        <button class="btn-save" id="btn-save-user" onclick="guardarUsuario()"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
@@ -283,6 +321,7 @@ function setTab(name,btn){
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('sec-'+name).classList.add('active');
+  if(name==='usuarios') cargarUsuarios();
 }
 
 // ── CARGAR ────────────────────────────────────────────
@@ -371,7 +410,17 @@ async function guardarMaterial(){
   }
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('mat');
-  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
+  await initAuth('editor').then(user=>{
+  if(!user)return;
+  renderUserChip();
+  applyRoleUI();
+  cargarTodo();
+  // Mostrar tab usuarios solo a propietario
+  if(!can('usuarios')){
+    const t=document.getElementById('tab-usuarios');
+    if(t)t.style.display='none';
+  }
+});
   showToast(editMatId?'Material actualizado':'Material creado');
 }
 
@@ -387,7 +436,17 @@ async function deleteMaterial(){
   const {error}=await sb.from('materiales').delete().eq('id',editMatId);
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('mat');
-  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
+  await initAuth('editor').then(user=>{
+  if(!user)return;
+  renderUserChip();
+  applyRoleUI();
+  cargarTodo();
+  // Mostrar tab usuarios solo a propietario
+  if(!can('usuarios')){
+    const t=document.getElementById('tab-usuarios');
+    if(t)t.style.display='none';
+  }
+});
   showToast('Material eliminado');
 }
 
@@ -451,7 +510,17 @@ async function guardarProceso(){
   }
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('proc');
-  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
+  await initAuth('editor').then(user=>{
+  if(!user)return;
+  renderUserChip();
+  applyRoleUI();
+  cargarTodo();
+  // Mostrar tab usuarios solo a propietario
+  if(!can('usuarios')){
+    const t=document.getElementById('tab-usuarios');
+    if(t)t.style.display='none';
+  }
+});
   showToast(editProcId?'Proceso actualizado':'Proceso creado');
 }
 
@@ -467,11 +536,115 @@ async function deleteProceso(){
   const {error}=await sb.from('procesos').delete().eq('id',editProcId);
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('proc');
-  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
+  await initAuth('editor').then(user=>{
+  if(!user)return;
+  renderUserChip();
+  applyRoleUI();
+  cargarTodo();
+  // Mostrar tab usuarios solo a propietario
+  if(!can('usuarios')){
+    const t=document.getElementById('tab-usuarios');
+    if(t)t.style.display='none';
+  }
+});
   showToast('Proceso eliminado');
 }
 
 // ── HELPERS ───────────────────────────────────────────
+let usuarios=[], editUserId=null;
+
+const ROL_LABELS={propietario:'Propietario',administrador:'Administrador',operador:'Operador'};
+const ROL_COLORS={
+  propietario:{bg:'#FEF6EE',color:'#7A3D00'},
+  administrador:{bg:'#EEF3FB',color:'#0C3D8A'},
+  operador:{bg:'#F0F7EA',color:'#2D5A1B'}
+};
+
+async function cargarUsuarios(){
+  const {data,error}=await sb.from('perfiles').select('*, auth_email:id').order('nombre');
+  // email comes from auth.users via SQL view — use stored email fallback
+  if(error){showToast('Error: '+error.message,true);return;}
+  usuarios=data||[];
+  renderUsuarios();
+}
+
+function renderUsuarios(){
+  const tbody=document.getElementById('tbody-users');
+  if(!tbody)return;
+  if(!usuarios.length){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay usuarios</td></tr>';return;}
+  tbody.innerHTML=usuarios.map(u=>{
+    const rc=ROL_COLORS[u.rol]||ROL_COLORS.operador;
+    return`<tr>
+      <td style="font-weight:500">${u.nombre}</td>
+      <td style="color:var(--tx2);font-size:12px">${u.email||'—'}</td>
+      <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${rc.bg};color:${rc.color}">${ROL_LABELS[u.rol]||u.rol}</span></td>
+      <td style="text-align:center">
+        <label class="toggle"><input type="checkbox" ${u.activo?'checked':''} onchange="toggleUsuario('${u.id}',this.checked)"><span class="toggle-slider"></span></label>
+      </td>
+      <td style="text-align:center">
+        <button class="btn-icon" onclick="openUsuario('${u.id}')"><i class="ti ti-pencil"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openUsuario(id){
+  editUserId=id||null;
+  const u=id?usuarios.find(x=>x.id===id):null;
+  document.getElementById('user-modal-title').textContent=u?'Editar Usuario':'Nuevo Usuario';
+  document.getElementById('user-nombre').value=u?.nombre||'';
+  document.getElementById('user-email').value=u?.email||'';
+  document.getElementById('user-email').disabled=!!u;
+  document.getElementById('user-pass').value='12345678';
+  document.getElementById('user-pass-wrap').style.display=u?'none':'block';
+  document.getElementById('user-rol').value=u?.rol||'operador';
+  document.getElementById('user-btn-delete').style.display=u?'flex':'none';
+  document.getElementById('overlay-user').classList.add('open');
+  setTimeout(()=>document.getElementById('user-nombre').focus(),100);
+}
+
+async function guardarUsuario(){
+  const nombre=document.getElementById('user-nombre').value.trim();
+  const email=document.getElementById('user-email').value.trim();
+  const rol=document.getElementById('user-rol').value;
+  if(!nombre||(!editUserId&&!email)){showToast('Completá nombre y email',true);return;}
+  const btn=document.getElementById('btn-save-user');btn.disabled=true;
+
+  if(editUserId){
+    // Solo actualizar perfil
+    const {error}=await sb.from('perfiles').update({nombre,rol}).eq('id',editUserId);
+    btn.disabled=false;
+    if(error){showToast('Error: '+error.message,true);return;}
+    closeModal('user');await cargarUsuarios();showToast('Usuario actualizado');
+  } else {
+    // Crear cuenta en Auth + perfil
+    const pass=document.getElementById('user-pass').value;
+    if(pass.length<6){showToast('La contraseña debe tener al menos 6 caracteres',true);btn.disabled=false;return;}
+    const {data,error}=await sb.auth.signUp({email,password:pass});
+    btn.disabled=false;
+    if(error){showToast('Error: '+error.message,true);return;}
+    if(data?.user){
+      await sb.from('perfiles').insert({id:data.user.id,nombre,email,rol,activo:true});
+    }
+    closeModal('user');await cargarUsuarios();
+    showToast('Usuario creado — compartí el email y contraseña con '+nombre);
+  }
+}
+
+async function toggleUsuario(id,val){
+  // No permitir desactivarse a uno mismo
+  if(id===currentUser?.id){showToast('No podés desactivar tu propia cuenta',true);await cargarUsuarios();return;}
+  await sb.from('perfiles').update({activo:val}).eq('id',id);
+}
+
+async function deleteUsuario(){
+  if(editUserId===currentUser?.id){showToast('No podés eliminar tu propia cuenta',true);return;}
+  if(!confirm('¿Eliminar este usuario? Solo se elimina el perfil, no la cuenta de Auth.'))return;
+  const {error}=await sb.from('perfiles').delete().eq('id',editUserId);
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('user');await cargarUsuarios();showToast('Usuario eliminado');
+}
+
 function closeModal(w){document.getElementById('overlay-'+w).classList.remove('open');}
 function showToast(msg,error){
   const t=document.getElementById('toast');
@@ -481,7 +654,17 @@ function showToast(msg,error){
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
+initAuth('editor').then(user=>{
+  if(!user)return;
+  renderUserChip();
+  applyRoleUI();
+  cargarTodo();
+  // Mostrar tab usuarios solo a propietario
+  if(!can('usuarios')){
+    const t=document.getElementById('tab-usuarios');
+    if(t)t.style.display='none';
+  }
+});
 </script>
 </body>
 </html>
