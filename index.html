@@ -323,6 +323,34 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 
+
+<!-- MODAL EDITAR TRABAJO -->
+<div class="overlay" id="overlay-edit" onclick="if(event.target===this)closeModal('edit')">
+  <div class="modal" style="width:480px">
+    <div class="modal-header">
+      <div class="modal-title"><i class="ti ti-pencil" style="color:var(--or);margin-right:6px"></i>Editar Trabajo <span id="edit-numero" style="color:var(--tx3);font-weight:400;font-size:14px"></span></div>
+      <button class="modal-close" onclick="closeModal('edit')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg">
+      <div class="ff"><label>Descripción</label><input type="text" id="edit-desc" placeholder="Descripción del trabajo"></div>
+      <div class="ff"><label>Medidas</label><input type="text" id="edit-med" placeholder="30x20cm, 40x60cm..."></div>
+      <div><label>Cantidad</label><input type="number" id="edit-qty" min="1" oninput="calcEditTotal()"></div>
+      <div><label>Precio Unit.</label><input type="number" id="edit-precio" placeholder="0" oninput="calcEditTotal()"></div>
+      <div><label>Seña</label><input type="number" id="edit-sena" placeholder="0" oninput="calcEditTotal()"></div>
+      <div><label>Medio de Pago</label>
+        <select id="edit-pago"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
+      </div>
+      <div class="ff" style="background:var(--s2);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Total</div><div id="edit-total-preview" style="font-size:18px;font-weight:600">$0</div></div>
+        <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Saldo</div><div id="edit-saldo-preview" style="font-size:18px;font-weight:600;color:var(--cst)">$0</div></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal('edit')">Cancelar</button>
+      <button class="btn-save" id="btn-save-edit" onclick="guardarEdicion()"><i class="ti ti-check"></i> Guardar</button>
+    </div>
+  </div>
+</div>
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
@@ -330,7 +358,7 @@ const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',pagoTareaId=null;
+let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',pagoTareaId=null,editTareaId=null;
 
 function fmt(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -537,6 +565,8 @@ function abrirDropdown(e,id){
   }
   if(t.estado==='cerrado'&&t.saldo>0) items+=`<div class="dd-item green" onclick="abrirPago('${id}')"><i class="ti ti-cash"></i>Registrar Pago</div>`;
   if(t.estado==='cerrado'&&t.saldo<=0) items+=`<div class="dd-item" style="color:var(--tx3);cursor:default"><i class="ti ti-circle-check"></i>Cobrado completo</div>`;
+  items+=`<div class="dd-sep"></div>`;
+  items+=`<div class="dd-item" onclick="abrirEdicion('${id}')"><i class="ti ti-pencil"></i>Editar</div>`;
   dd.innerHTML=items;
   dd.classList.add('open');
   const rect=e.currentTarget.getBoundingClientRect();
@@ -641,6 +671,7 @@ function closeModal(w){
     resetProcesos();
   }
   if(w==='pago')pagoTareaId=null;
+  if(w==='edit')editTareaId=null;
 }
 function calcTotal(){
   const qty=parseFloat(document.getElementById('f-qty').value)||0;
@@ -693,6 +724,59 @@ async function guardarTarea(){
   showToast('Tarea '+numero+' creada');
 }
 
+
+// ── EDITAR TRABAJO ────────────────────────────────────
+function abrirEdicion(id){
+  document.getElementById('dropdown').classList.remove('open');
+  const t=tareas.find(x=>x.id===id);
+  if(!t) return;
+  editTareaId=id;
+  document.getElementById('edit-numero').textContent='#'+t.numero;
+  document.getElementById('edit-desc').value=t.descripcion||'';
+  document.getElementById('edit-med').value=t.medidas||'';
+  document.getElementById('edit-qty').value=t.cantidad||1;
+  document.getElementById('edit-precio').value=t.precio_unit||0;
+  document.getElementById('edit-sena').value=t.sena||0;
+  document.getElementById('edit-pago').value=t.medio_pago||'';
+  calcEditTotal();
+  openModal('edit');
+  setTimeout(()=>document.getElementById('edit-desc').focus(),100);
+}
+function calcEditTotal(){
+  const qty=parseFloat(document.getElementById('edit-qty').value)||0;
+  const precio=parseFloat(document.getElementById('edit-precio').value)||0;
+  const sena=parseFloat(document.getElementById('edit-sena').value)||0;
+  const total=qty*precio;
+  const saldo=total-sena;
+  document.getElementById('edit-total-preview').textContent=fmt(total);
+  document.getElementById('edit-saldo-preview').textContent=fmt(Math.max(saldo,0));
+  document.getElementById('edit-saldo-preview').style.color=saldo>0?'var(--cst)':'var(--gnt)';
+}
+async function guardarEdicion(){
+  const t=tareas.find(x=>x.id===editTareaId);
+  if(!t) return;
+  const btn=document.getElementById('btn-save-edit'); btn.disabled=true;
+  const qty=parseFloat(document.getElementById('edit-qty').value)||1;
+  const precio=parseFloat(document.getElementById('edit-precio').value)||0;
+  const sena=parseFloat(document.getElementById('edit-sena').value)||0;
+  const total=qty*precio;
+  const saldo=total-sena;
+  const updates={
+    descripcion:document.getElementById('edit-desc').value.trim(),
+    medidas:document.getElementById('edit-med').value.trim(),
+    cantidad:qty,
+    precio_unit:precio,
+    sena,total,saldo,
+    medio_pago:document.getElementById('edit-pago').value
+  };
+  const {error}=await sb.from('trabajos').update(updates).eq('id',editTareaId);
+  btn.disabled=false;
+  if(error){showToast('Error: '+error.message,true);return;}
+  Object.assign(t,updates);
+  closeModal('edit');
+  renderTabla();updateStats();
+  showToast('Trabajo '+t.numero+' actualizado');
+}
 function showToast(msg,error){
   const t=document.getElementById('toast');
   document.getElementById('toast-msg').textContent=msg;
