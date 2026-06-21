@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <style>
 :root{
   --bg:#F7F6F3;--surface:#fff;--s2:#F3F2EF;--bd:rgba(0,0,0,0.1);
@@ -100,6 +101,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     <span class="brand-name">Finanzas</span>
     <span class="brand-badge">Admin</span>
   </div>
+  <div class="user-chip" id="user-chip" style="display:flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;background:#F3F2EF;border:1px solid rgba(0,0,0,0.1);border-radius:20px;font-size:13px;color:#6B6B67"></div>
   <a href="index.html" class="back-btn"><i class="ti ti-arrow-left" style="font-size:15px"></i> Volver</a>
 </div>
 
@@ -176,9 +178,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 </div>
 
 <script>
-const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
-const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+// sb viene de auth.js
 
 let todos=[], periodo='mes';
 
@@ -426,7 +426,7 @@ function renderMedios(){
   document.getElementById('medios-content').innerHTML=html;
 }
 
-cargar();
+initAuth('finanzas').then(user=>{ if(!user)return; renderUserChip(); cargar(); });
 </script>
 </body>
 </html>

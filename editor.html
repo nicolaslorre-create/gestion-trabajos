@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/dist/tabler-icons.min.css">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="auth.js"></script>
 <style>
 :root{
   --bg:#F7F6F3;--surface:#fff;--s2:#F3F2EF;--bd:rgba(0,0,0,0.1);
@@ -108,6 +109,8 @@ tbody tr:hover td{background:var(--s2)}
     <div class="brand-icon"><i class="ti ti-settings"></i></div>
     <span class="brand-name">Editor</span>
   </div>
+  <a id="nav-finanzas" href="finanzas.html" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px solid var(--bd);border-radius:var(--r);font-size:13px;color:var(--tx2);text-decoration:none;background:var(--s2)"><i class="ti ti-chart-bar" style="font-size:15px"></i>Finanzas</a>
+  <div class="user-chip" id="user-chip" style="display:flex;align-items:center;gap:7px;padding:5px 12px 5px 6px;background:#F3F2EF;border:1px solid rgba(0,0,0,0.1);border-radius:20px;font-size:13px;color:#6B6B67"></div>
   <a href="index.html" class="back-btn"><i class="ti ti-arrow-left" style="font-size:15px"></i> Volver a trabajos</a>
 </div>
 
@@ -258,9 +261,7 @@ tbody tr:hover td{background:var(--s2)}
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
-const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
-const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+// sb viene de auth.js
 
 let materiales=[], procesos=[];
 let editMatId=null, editProcId=null;
@@ -370,7 +371,7 @@ async function guardarMaterial(){
   }
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('mat');
-  await cargarTodo();
+  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
   showToast(editMatId?'Material actualizado':'Material creado');
 }
 
@@ -386,7 +387,7 @@ async function deleteMaterial(){
   const {error}=await sb.from('materiales').delete().eq('id',editMatId);
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('mat');
-  await cargarTodo();
+  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
   showToast('Material eliminado');
 }
 
@@ -450,7 +451,7 @@ async function guardarProceso(){
   }
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('proc');
-  await cargarTodo();
+  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
   showToast(editProcId?'Proceso actualizado':'Proceso creado');
 }
 
@@ -466,7 +467,7 @@ async function deleteProceso(){
   const {error}=await sb.from('procesos').delete().eq('id',editProcId);
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('proc');
-  await cargarTodo();
+  await initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
   showToast('Proceso eliminado');
 }
 
@@ -480,7 +481,7 @@ function showToast(msg,error){
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 
-cargarTodo();
+initAuth('editor').then(user=>{ if(!user)return; renderUserChip(); applyRoleUI(); cargarTodo(); });
 </script>
 </body>
 </html>

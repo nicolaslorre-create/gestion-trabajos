@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iniciar sesión</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#F7F6F3;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{background:#fff;border:1px solid rgba(0,0,0,0.1);border-radius:16px;padding:40px;width:100%;max-width:380px}
+.logo{width:44px;height:44px;background:#E8711A;border-radius:10px;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:22px}
+.title{font-size:22px;font-weight:600;letter-spacing:-.4px;text-align:center;color:#1A1A18;margin-bottom:6px}
+.sub{font-size:13px;color:#6B6B67;text-align:center;margin-bottom:28px}
+.field{margin-bottom:16px}
+.field label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#A8A8A4;margin-bottom:6px}
+.field input{width:100%;padding:10px 13px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;color:#1A1A18;outline:none;transition:border-color .15s}
+.field input:focus{border-color:#E8711A}
+.btn{width:100%;padding:11px;background:#E8711A;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#fff;cursor:pointer;margin-top:8px;transition:background .15s}
+.btn:hover{background:#D4611A}
+.btn:disabled{opacity:.6;cursor:not-allowed}
+.error{background:#FFF0F0;border:1px solid #F5C0C0;border-radius:8px;padding:10px 14px;font-size:13px;color:#C0392B;margin-top:14px;display:none}
+.error.show{display:block}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">⚡</div>
+  <div class="title">Gestión de Trabajos</div>
+  <div class="sub">Ingresá con tu cuenta</div>
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="tu@email.com" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Contraseña</label>
+    <input type="password" id="pass" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn" id="btn-login" onclick="login()">Iniciar sesión</button>
+  <div class="error" id="error-msg"></div>
+</div>
+<script>
+const SUPA_URL='https://kjexzywygtzuxtzlberb.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+// Si ya hay sesión, redirigir directo
+sb.auth.getSession().then(({data:{session}})=>{
+  if(session) window.location.href='index.html';
+});
+
+document.getElementById('pass').addEventListener('keydown',e=>{
+  if(e.key==='Enter') login();
+});
+
+async function login(){
+  const email=document.getElementById('email').value.trim();
+  const pass=document.getElementById('pass').value;
+  const btn=document.getElementById('btn-login');
+  const err=document.getElementById('error-msg');
+  err.classList.remove('show');
+  if(!email||!pass){showErr('Completá email y contraseña.');return;}
+  btn.disabled=true;btn.textContent='Ingresando...';
+  const {data,error}=await sb.auth.signInWithPassword({email,password:pass});
+  if(error){
+    btn.disabled=false;btn.textContent='Iniciar sesión';
+    showErr(error.message==='Invalid login credentials'?'Email o contraseña incorrectos.':error.message);
+    return;
+  }
+  window.location.href='index.html';
+}
+function showErr(msg){
+  const el=document.getElementById('error-msg');
+  el.textContent=msg;el.classList.add('show');
+}
+</script>
+</body>
+</html>
