@@ -176,6 +176,31 @@ tbody tr:hover td{background:var(--s2)}
       </table>
     </div>
   </div>
+
+  <!-- USUARIOS -->
+  <div class="section" id="sec-usuarios">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Usuarios del sistema</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Solo el propietario puede gestionar usuarios</div>
+      </div>
+      <button class="btn-add" id="btn-add-usuario" onclick="openUsuario()"><i class="ti ti-plus"></i> Nuevo usuario</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Email</th>
+            <th>Rol</th>
+            <th style="width:80px;text-align:center">Activo</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-users"><tr><td colspan="5" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
 <!-- MODAL MATERIAL -->
