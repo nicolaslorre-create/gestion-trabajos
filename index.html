@@ -108,6 +108,26 @@ tbody tr:last-child td{border-bottom:none}
 .cnt-cerrs{background:#FFDCAA;color:var(--cst)}.cnt-cerrn{background:#C8D9F5;color:var(--cn)}
 .row-empty td,.loading-row td{text-align:center;padding:28px;color:var(--tx3);font-size:13px}
 
+
+/* BOTTOM SHEET */
+.bsheet-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;opacity:0;pointer-events:none;transition:opacity .2s}
+.bsheet-overlay.open{opacity:1;pointer-events:all}
+.bsheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;padding:20px 20px 32px;z-index:301;transform:translateY(100%);transition:transform .25s cubic-bezier(.32,.72,0,1);max-width:600px;margin:0 auto}
+.bsheet-overlay.open .bsheet{transform:translateY(0)}
+.bsheet-handle{width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 18px}
+.bsheet-title{font-size:15px;font-weight:600;margin-bottom:4px}
+.bsheet-sub{font-size:12px;color:var(--tx3);margin-bottom:18px}
+.bsheet-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.bsheet-field label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:5px}
+.bsheet-field input{width:100%;padding:10px 11px;border:1.5px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--tx);background:var(--surface);outline:none;transition:border-color .15s}
+.bsheet-field input:focus{border-color:var(--or)}
+.bsheet-result{background:var(--s2);border-radius:var(--r);padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.bsheet-result-item label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);display:block;margin-bottom:3px}
+.bsheet-result-item .val{font-size:18px;font-weight:600}
+.bsheet-btn{width:100%;padding:13px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#fff;cursor:pointer}
+.bsheet-btn:hover{background:#D4611A}
+.bsheet-btn:disabled{opacity:.5}
+
 /* DROPDOWN */
 .dropdown{position:fixed;background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:500;min-width:200px;overflow:hidden;display:none}
 .dropdown.open{display:block}
@@ -352,12 +372,46 @@ tbody tr:last-child td{border-bottom:none}
     </div>
   </div>
 </div>
+<!-- BOTTOM SHEET EDICIÓN RÁPIDA -->
+<div class="bsheet-overlay" id="bsheet-overlay" onclick="if(event.target===this)closeBsheet()">
+  <div class="bsheet">
+    <div class="bsheet-handle"></div>
+    <div class="bsheet-title" id="bsheet-title">Editar trabajo</div>
+    <div class="bsheet-sub" id="bsheet-sub"></div>
+    <div class="bsheet-fields">
+      <div class="bsheet-field">
+        <label>Cantidad</label>
+        <input type="number" id="bs-qty" min="1" oninput="calcBsheet()">
+      </div>
+      <div class="bsheet-field">
+        <label>Precio Unit.</label>
+        <input type="number" id="bs-precio" oninput="calcBsheet()">
+      </div>
+      <div class="bsheet-field">
+        <label>Seña</label>
+        <input type="number" id="bs-sena" oninput="calcBsheet()">
+      </div>
+    </div>
+    <div class="bsheet-result">
+      <div class="bsheet-result-item">
+        <label>Total</label>
+        <div class="val" id="bs-total">$0</div>
+      </div>
+      <div class="bsheet-result-item">
+        <label>Saldo</label>
+        <div class="val" id="bs-saldo" style="color:var(--cst)">$0</div>
+      </div>
+    </div>
+    <button class="bsheet-btn" id="bs-btn" onclick="guardarBsheet()"><i class="ti ti-check"></i> Guardar</button>
+  </div>
+</div>
+
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
 // sb, currentUser, can() vienen de auth.js
 
-let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',pagoTareaId=null,editTareaId=null;
+let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',pagoTareaId=null,editTareaId=null,bsheetId=null;
 
 function fmt(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -493,7 +547,7 @@ function renderTabla(){
       const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
       const cli=t.clientes?.nombre||'—';
       const tel=t.clientes?.telefono||'—';
-      html+=`<tr class="${g.rowCls}">
+      html+=`<tr class="${g.rowCls}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">
         <td style="text-align:center">${chkEst}</td>
         <td style="color:var(--tx3);font-size:11px">${fmtFecha(t.fecha)}</td>
         <td class="mono">${t.numero||'—'}</td>
@@ -775,6 +829,54 @@ async function guardarEdicion(){
   closeModal('edit');
   renderTabla();updateStats();
   showToast('Trabajo '+t.numero+' actualizado');
+}
+
+// ── BOTTOM SHEET EDICIÓN RÁPIDA ───────────────────────
+function abrirBsheet(id){
+  const t=tareas.find(x=>x.id===id);
+  if(!t)return;
+  bsheetId=id;
+  document.getElementById('bsheet-title').textContent='Trabajo #'+t.numero;
+  document.getElementById('bsheet-sub').textContent=(t.descripcion||'')+(t.clientes?.nombre?' — '+t.clientes.nombre:'');
+  document.getElementById('bs-qty').value=t.cantidad||1;
+  document.getElementById('bs-precio').value=t.precio_unit||0;
+  document.getElementById('bs-sena').value=t.sena||0;
+  calcBsheet();
+  document.getElementById('bsheet-overlay').classList.add('open');
+  setTimeout(()=>document.getElementById('bs-precio').focus(),300);
+}
+function closeBsheet(){
+  document.getElementById('bsheet-overlay').classList.remove('open');
+  bsheetId=null;
+}
+function calcBsheet(){
+  const qty=parseFloat(document.getElementById('bs-qty').value)||0;
+  const precio=parseFloat(document.getElementById('bs-precio').value)||0;
+  const sena=parseFloat(document.getElementById('bs-sena').value)||0;
+  const total=qty*precio;
+  const saldo=Math.max(total-sena,0);
+  document.getElementById('bs-total').textContent=fmt(total);
+  document.getElementById('bs-saldo').textContent=fmt(saldo);
+  document.getElementById('bs-saldo').style.color=saldo>0?'var(--cst)':'var(--gnt)';
+}
+async function guardarBsheet(){
+  const t=tareas.find(x=>x.id===bsheetId);
+  if(!t)return;
+  const btn=document.getElementById('bs-btn');btn.disabled=true;
+  const qty=parseFloat(document.getElementById('bs-qty').value)||1;
+  const precio=parseFloat(document.getElementById('bs-precio').value)||0;
+  const sena=parseFloat(document.getElementById('bs-sena').value)||0;
+  const total=qty*precio;
+  const saldo=Math.max(total-sena,0);
+  const {error}=await sb.from('trabajos').update({
+    cantidad:qty,precio_unit:precio,sena,total,saldo
+  }).eq('id',bsheetId);
+  btn.disabled=false;
+  if(error){showToast('Error: '+error.message,true);return;}
+  Object.assign(t,{cantidad:qty,precio_unit:precio,sena,total,saldo});
+  closeBsheet();
+  renderTabla();updateStats();
+  showToast('Trabajo #'+t.numero+' actualizado');
 }
 function showToast(msg,error){
   const t=document.getElementById('toast');
