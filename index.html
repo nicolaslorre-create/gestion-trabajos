@@ -468,7 +468,9 @@ function setF(f,btn){filtro=f;document.querySelectorAll('.filt-btn').forEach(b=>
 function chkHtml(checked,cls,clickFn){
   const clsCss=checked?`chk-box ${cls}`:'chk-box';
   const icon=checked?`<i class="ti ti-check" style="font-size:8px"></i>`:'';
-  const click=clickFn?`onclick="${clickFn}" class="${clsCss} clickable"`:`class="${clsCss}"`;
+  const click=clickFn
+    ?`onclick="event.stopPropagation();${clickFn}" class="${clsCss} clickable"`
+    :`class="${clsCss}"`;
   return `<div ${click}>${icon}</div>`;
 }
 
@@ -569,7 +571,7 @@ function renderTabla(){
         <td style="text-align:center">${chkRet}</td>
         <td style="text-align:center">${chkListo}</td>
         <td style="font-size:11px;color:var(--tx2)">${t.cuit||'—'}</td>
-        <td><button class="act-btn" onclick="abrirDropdown(event,'${t.id}')"><i class="ti ti-dots-vertical"></i></button></td>
+        <td><button class="act-btn" onclick="event.stopPropagation();abrirDropdown(event,'${t.id}')"><i class="ti ti-dots-vertical"></i></button></td>
       </tr>`;
     });
   });
@@ -835,6 +837,8 @@ async function guardarEdicion(){
 function abrirBsheet(id){
   const t=tareas.find(x=>x.id===id);
   if(!t)return;
+  // Don't open if no id (safety guard)
+  if(!id)return;
   bsheetId=id;
   document.getElementById('bsheet-title').textContent='Trabajo #'+t.numero;
   document.getElementById('bsheet-sub').textContent=(t.descripcion||'')+(t.clientes?.nombre?' — '+t.clientes.nombre:'');
