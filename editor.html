@@ -121,6 +121,7 @@ tbody tr:hover td{background:var(--s2)}
   <div class="tabs">
     <div class="tab active" onclick="setTab('materiales',this)"><i class="ti ti-stack-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Materiales</div>
     <div class="tab" onclick="setTab('procesos',this)"><i class="ti ti-settings-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Procesos</div>
+    <div class="tab" onclick="setTab('maquinas',this)"><i class="ti ti-cpu" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Máquinas</div>
     <div class="tab" id="tab-usuarios" onclick="setTab('usuarios',this)"><i class="ti ti-users" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Usuarios</div>
   </div>
 
@@ -140,9 +141,11 @@ tbody tr:hover td{background:var(--s2)}
             <th>Nombre</th>
             <th>Espesor</th>
             <th>Categoría</th>
+            <th>Dimensiones</th>
             <th>P. Costo</th>
             <th>P. Lista</th>
             <th>Margen</th>
+            <th>$/cm²</th>
             <th style="width:60px;text-align:center">Activo</th>
             <th style="width:60px"></th>
           </tr>
@@ -173,6 +176,37 @@ tbody tr:hover td{background:var(--s2)}
           </tr>
         </thead>
         <tbody id="tbody-proc"><tr><td colspan="5" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MÁQUINAS -->
+  <div class="section" id="sec-maquinas">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Máquinas</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Configuración de equipos para el cotizador automático</div>
+      </div>
+      <button class="btn-add" onclick="openMaquina()"><i class="ti ti-plus"></i> Agregar máquina</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Consumible</th>
+            <th>Vida útil</th>
+            <th>kWh</th>
+            <th>$/kWh</th>
+            <th>Overhead/mes</th>
+            <th>Hs/mes</th>
+            <th>Min/cm²</th>
+            <th style="width:60px;text-align:center">Activo</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-maq"><tr><td colspan="11" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -225,9 +259,10 @@ tbody tr:hover td{background:var(--s2)}
           <option value="Otro">Otro</option>
         </select>
       </div>
-      <div><label>Unidad</label><input type="text" id="mat-unidad" placeholder="mm, cm, m2..." value="mm"></div>
-      <div><label>Precio Costo</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen()"></div>
-      <div><label>Precio Lista</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Ancho placa (cm)</label><input type="number" id="mat-ancho" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Alto placa (cm)</label><input type="number" id="mat-alto" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Precio Costo (placa)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Precio Lista (placa)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen()"></div>
       <div class="ff margen-preview" id="margen-preview"></div>
     </div>
     <div class="modal-footer">
@@ -321,13 +356,52 @@ tbody tr:hover td{background:var(--s2)}
     </div>
   </div>
 </div>
+<!-- MODAL MÁQUINA -->
+<div class="overlay" id="overlay-maq" onclick="if(event.target===this)closeModal('maq')">
+  <div class="modal" style="width:540px">
+    <div class="modal-header">
+      <div class="modal-title" id="maq-modal-title">Nueva Máquina</div>
+      <button class="modal-close" onclick="closeModal('maq')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg">
+      <div class="ff"><label>Nombre</label><input type="text" id="maq-nombre" placeholder="CO2 grande, Fibra 30W..."></div>
+      <div>
+        <label>Tipo</label>
+        <select id="maq-tipo">
+          <option value="CO2">CO2</option>
+          <option value="Fibra">Fibra</option>
+          <option value="Diodo">Diodo LED</option>
+          <option value="CNC">CNC Router</option>
+          <option value="Plasma">Plasma</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div><label>Costo consumible (ARS)</label><input type="number" id="maq-consumible" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Vida útil consumible (hs)</label><input type="number" id="maq-vida" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Consumo eléctrico (kWh)</label><input type="number" id="maq-kwh" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Precio kWh (ARS)</label><input type="number" id="maq-precio-kwh" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Overhead mensual (ARS)</label><input type="number" id="maq-overhead" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Horas trabajo/mes</label><input type="number" id="maq-horas-mes" placeholder="160" value="160" oninput="calcMaquina()"></div>
+      <div class="ff"><label>Tarifa tiempo (min/cm²)</label><input type="number" id="maq-tarifa" placeholder="0.01" step="0.001" oninput="calcMaquina()"></div>
+      <div class="ff" id="maq-preview" style="display:none;background:var(--s2);border-radius:var(--r);padding:12px;font-size:12px;color:var(--tx2);line-height:1.8"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-delete" id="maq-btn-delete" style="display:none" onclick="deleteMaquina()"><i class="ti ti-trash"></i> Eliminar</button>
+      <div class="modal-footer-right">
+        <button class="btn-cancel" onclick="closeModal('maq')">Cancelar</button>
+        <button class="btn-save" onclick="guardarMaquina()"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
 // sb viene de auth.js
 
-let materiales=[], procesos=[];
-let editMatId=null, editProcId=null;
+let materiales=[], procesos=[], maquinas=[];
+let editMatId=null, editProcId=null, editMaqId=null;
 
 const CAT_COLORS={
   'Metal':'#E6EEF8','Acrilico':'#EAF3DE','Madera':'#FFF0DC',
@@ -347,16 +421,18 @@ function setTab(name,btn){
   btn.classList.add('active');
   document.getElementById('sec-'+name).classList.add('active');
   if(name==='usuarios') cargarUsuarios();
+  if(name==='maquinas') renderMaquinas();
 }
 
 // ── CARGAR ────────────────────────────────────────────
 async function cargarTodo(){
-  const [{data:m},{data:p}]=await Promise.all([
+  const [{data:m},{data:p},{data:mq}]=await Promise.all([
     sb.from('materiales').select('*').order('categoria').order('nombre').order('espesor'),
-    sb.from('procesos').select('*').order('orden')
+    sb.from('procesos').select('*').order('orden'),
+    sb.from('maquinas').select('*').order('nombre')
   ]);
-  materiales=m||[]; procesos=p||[];
-  renderMateriales(); renderProcesos();
+  materiales=m||[]; procesos=p||[]; maquinas=mq||[];
+  renderMateriales(); renderProcesos(); renderMaquinas();
 }
 
 // ── MATERIALES ────────────────────────────────────────
@@ -368,13 +444,18 @@ function renderMateriales(){
       ?Math.round((m.precio_lista-m.precio_costo)/m.precio_costo*100)+'%' : '—';
     const cc=CAT_COLORS[m.categoria]||CAT_COLORS['Otro'];
     const ct=CAT_TC[m.categoria]||CAT_TC['Otro'];
+    const area=(m.ancho_cm||0)*(m.alto_cm||0);
+    const precioCm2=area>0&&m.precio_costo>0?'$'+(m.precio_costo/area).toFixed(4)+'/cm²':'—';
+    const dims=(m.ancho_cm&&m.alto_cm)?`${m.ancho_cm}×${m.alto_cm}cm`:'—';
     return `<tr>
       <td style="font-weight:500">${m.nombre}</td>
       <td style="color:var(--tx2)">${m.espesor||'—'}</td>
       <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${cc};color:${ct}">${m.categoria||'—'}</span></td>
+      <td style="color:var(--tx2);font-size:12px">${dims}</td>
       <td>${fmt(m.precio_costo)}</td>
       <td>${fmt(m.precio_lista)}</td>
       <td style="color:var(--gnt);font-weight:500">${margen}</td>
+      <td style="color:var(--tx2);font-size:11px">${precioCm2}</td>
       <td style="text-align:center">
         <label class="toggle"><input type="checkbox" ${m.activo?'checked':''} onchange="toggleMaterial('${m.id}',this.checked)"><span class="toggle-slider"></span></label>
       </td>
@@ -392,7 +473,8 @@ function openMaterial(id){
   document.getElementById('mat-nombre').value=m?.nombre||'';
   document.getElementById('mat-espesor').value=m?.espesor||'';
   document.getElementById('mat-categoria').value=m?.categoria||'Metal';
-  document.getElementById('mat-unidad').value=m?.unidad||'mm';
+  document.getElementById('mat-ancho').value=m?.ancho_cm||'';
+  document.getElementById('mat-alto').value=m?.alto_cm||'';
   document.getElementById('mat-costo').value=m?.precio_costo||'';
   document.getElementById('mat-lista').value=m?.precio_lista||'';
   document.getElementById('mat-btn-delete').style.display=m?'flex':'none';
@@ -404,11 +486,15 @@ function openMaterial(id){
 function calcMargen(){
   const costo=parseFloat(document.getElementById('mat-costo').value)||0;
   const lista=parseFloat(document.getElementById('mat-lista').value)||0;
+  const ancho=parseFloat(document.getElementById('mat-ancho').value)||0;
+  const alto=parseFloat(document.getElementById('mat-alto').value)||0;
   const el=document.getElementById('margen-preview');
   if(costo>0&&lista>0){
     const m=Math.round((lista-costo)/costo*100);
+    const area=ancho*alto;
+    const cm2txt=area>0?` · <strong>$${(costo/area).toFixed(4)}/cm²</strong>`:'';
     el.style.display='block';
-    el.innerHTML=`<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>${m}%</strong> — ganancia ${fmt(lista-costo)} por unidad`;
+    el.innerHTML=`<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>${m}%</strong> — ganancia ${fmt(lista-costo)} por placa${cm2txt}`;
     el.style.color=m>0?'var(--gnt)':'#C0392B';
     el.style.background=m>0?'var(--gnl)':'#FFF0F0';
     el.style.borderColor=m>0?'#AADDA0':'#F5C0C0';
@@ -422,7 +508,8 @@ async function guardarMaterial(){
     nombre,
     espesor:document.getElementById('mat-espesor').value.trim(),
     categoria:document.getElementById('mat-categoria').value,
-    unidad:document.getElementById('mat-unidad').value.trim(),
+    ancho_cm:parseFloat(document.getElementById('mat-ancho').value)||0,
+    alto_cm:parseFloat(document.getElementById('mat-alto').value)||0,
     precio_costo:parseFloat(document.getElementById('mat-costo').value)||0,
     precio_lista:parseFloat(document.getElementById('mat-lista').value)||0,
     activo:true
@@ -573,6 +660,132 @@ async function deleteProceso(){
   }
 });
   showToast('Proceso eliminado');
+}
+
+// ── MÁQUINAS ──────────────────────────────────────────
+const TIPO_COLORS={
+  'CO2':{bg:'#FEF6EE',color:'#7A3D00'},
+  'Fibra':{bg:'#EEF3FB',color:'#0C3D8A'},
+  'Diodo':{bg:'#F0F7EA',color:'#2D5A1B'},
+  'CNC':{bg:'#F3F2EF',color:'#3C3489'},
+  'Plasma':{bg:'#FBEAF0',color:'#72243E'},
+  'Otro':{bg:'#F3F2EF',color:'#5F5E5A'}
+};
+
+function renderMaquinas(){
+  const tbody=document.getElementById('tbody-maq');
+  if(!tbody)return;
+  if(!maquinas.length){tbody.innerHTML='<tr><td colspan="11" class="empty">No hay máquinas aún</td></tr>';return;}
+  tbody.innerHTML=maquinas.map(m=>{
+    const tc=TIPO_COLORS[m.tipo]||TIPO_COLORS['Otro'];
+    return`<tr>
+      <td style="font-weight:500">${m.nombre}</td>
+      <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${tc.bg};color:${tc.color}">${m.tipo||'—'}</span></td>
+      <td>${fmt(m.costo_consumible)}</td>
+      <td style="color:var(--tx2)">${m.vida_util_horas||0} hs</td>
+      <td style="color:var(--tx2)">${m.consumo_kwh||0}</td>
+      <td style="color:var(--tx2)">${fmt(m.precio_kwh)}</td>
+      <td>${fmt(m.overhead_mensual)}</td>
+      <td style="color:var(--tx2)">${m.horas_mensuales||0}</td>
+      <td style="color:var(--tx2)">${m.tarifa_min_cm2||0}</td>
+      <td style="text-align:center">
+        <label class="toggle"><input type="checkbox" ${m.activo?'checked':''} onchange="toggleMaquina('${m.id}',this.checked)"><span class="toggle-slider"></span></label>
+      </td>
+      <td style="text-align:center">
+        <button class="btn-icon" onclick="openMaquina('${m.id}')"><i class="ti ti-pencil"></i></button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function calcMaquina(){
+  const consumible=parseFloat(document.getElementById('maq-consumible').value)||0;
+  const vida=parseFloat(document.getElementById('maq-vida').value)||0;
+  const kwh=parseFloat(document.getElementById('maq-kwh').value)||0;
+  const precioKwh=parseFloat(document.getElementById('maq-precio-kwh').value)||0;
+  const overhead=parseFloat(document.getElementById('maq-overhead').value)||0;
+  const horasMes=parseFloat(document.getElementById('maq-horas-mes').value)||160;
+  const tarifa=parseFloat(document.getElementById('maq-tarifa').value)||0;
+  const el=document.getElementById('maq-preview');
+  if(consumible>0||kwh>0||overhead>0){
+    const costoCons=vida>0?consumible/vida:0;
+    const costoElec=kwh*precioKwh;
+    const costoOver=horasMes>0?overhead/horasMes:0;
+    const totalHora=costoCons+costoElec+costoOver;
+    el.style.display='block';
+    el.innerHTML=`
+      <strong style="color:var(--tx);display:block;margin-bottom:4px">Costo por hora de trabajo:</strong>
+      Consumible: ${fmt(costoCons)}/hs &nbsp;·&nbsp; Electricidad: ${fmt(costoElec)}/hs &nbsp;·&nbsp; Overhead: ${fmt(costoOver)}/hs<br>
+      <strong style="color:var(--or)">Total: ${fmt(totalHora)}/hs</strong>
+      ${tarifa>0?`<br><span style="color:var(--tx3);font-size:11px">Con tarifa ${tarifa} min/cm²: ${fmt(totalHora*tarifa/60)}/cm²</span>`:''}
+    `;
+  } else { el.style.display='none'; }
+}
+
+function openMaquina(id){
+  editMaqId=id||null;
+  const m=id?maquinas.find(x=>x.id===id):null;
+  document.getElementById('maq-modal-title').textContent=m?'Editar Máquina':'Nueva Máquina';
+  document.getElementById('maq-nombre').value=m?.nombre||'';
+  document.getElementById('maq-tipo').value=m?.tipo||'CO2';
+  document.getElementById('maq-consumible').value=m?.costo_consumible||'';
+  document.getElementById('maq-vida').value=m?.vida_util_horas||'';
+  document.getElementById('maq-kwh').value=m?.consumo_kwh||'';
+  document.getElementById('maq-precio-kwh').value=m?.precio_kwh||'';
+  document.getElementById('maq-overhead').value=m?.overhead_mensual||'';
+  document.getElementById('maq-horas-mes').value=m?.horas_mensuales||160;
+  document.getElementById('maq-tarifa').value=m?.tarifa_min_cm2||'';
+  document.getElementById('maq-btn-delete').style.display=m?'flex':'none';
+  document.getElementById('maq-preview').style.display='none';
+  document.getElementById('overlay-maq').classList.add('open');
+  setTimeout(()=>document.getElementById('maq-nombre').focus(),100);
+}
+
+async function guardarMaquina(){
+  const nombre=document.getElementById('maq-nombre').value.trim();
+  if(!nombre){showToast('Ingresá un nombre',true);return;}
+  const payload={
+    nombre,
+    tipo:document.getElementById('maq-tipo').value,
+    costo_consumible:parseFloat(document.getElementById('maq-consumible').value)||0,
+    vida_util_horas:parseFloat(document.getElementById('maq-vida').value)||0,
+    consumo_kwh:parseFloat(document.getElementById('maq-kwh').value)||0,
+    precio_kwh:parseFloat(document.getElementById('maq-precio-kwh').value)||0,
+    overhead_mensual:parseFloat(document.getElementById('maq-overhead').value)||0,
+    horas_mensuales:parseFloat(document.getElementById('maq-horas-mes').value)||160,
+    tarifa_min_cm2:parseFloat(document.getElementById('maq-tarifa').value)||0,
+    activo:true
+  };
+  let error;
+  if(editMaqId){
+    ({error}=await sb.from('maquinas').update(payload).eq('id',editMaqId));
+  } else {
+    ({error}=await sb.from('maquinas').insert(payload));
+  }
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('maq');
+  const {data}=await sb.from('maquinas').select('*').order('nombre');
+  maquinas=data||[];
+  renderMaquinas();
+  showToast(editMaqId?'Máquina actualizada':'Máquina creada');
+}
+
+async function toggleMaquina(id,val){
+  const {error}=await sb.from('maquinas').update({activo:val}).eq('id',id);
+  if(error){showToast('Error: '+error.message,true);return;}
+  const m=maquinas.find(x=>x.id===id);
+  if(m) m.activo=val;
+}
+
+async function deleteMaquina(){
+  if(!confirm('¿Eliminar esta máquina?'))return;
+  const {error}=await sb.from('maquinas').delete().eq('id',editMaqId);
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('maq');
+  const {data}=await sb.from('maquinas').select('*').order('nombre');
+  maquinas=data||[];
+  renderMaquinas();
+  showToast('Máquina eliminada');
 }
 
 // ── HELPERS ───────────────────────────────────────────
