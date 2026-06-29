@@ -552,20 +552,20 @@ function renderTabla(){
       const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
       const cli=t.clientes?.nombre||'—';
       const tel=t.clientes?.telefono||'—';
-      html+=`<tr class="${g.rowCls}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">
+      html+=`<tr class="${g.rowCls}">
         <td style="text-align:center">${chkEst}</td>
         <td style="color:var(--tx3);font-size:11px">${fmtFecha(t.fecha)}</td>
         <td class="mono">${t.numero||'—'}</td>
         <td><span class="pill ${g.pillCls}">${g.pillTxt}</span></td>
-        <td title="${t.descripcion||''}">${t.descripcion||'—'}</td>
-        <td title="${cli}">${cli}</td>
+        <td title="${t.descripcion||''}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${t.descripcion||'—'}</td>
+        <td title="${cli}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${cli}</td>
         <td title="${tel}" style="color:var(--tx2)">${tel}</td>
         <td>${buildProcChips(t)}</td>
         <td style="color:var(--tx2);font-size:12px">${buildMatLabel(t)}</td>
-        <td style="color:var(--tx2);font-size:11px" title="${t.medidas||''}">${t.medidas||'—'}</td>
-        <td style="text-align:center">${t.cantidad||1}</td>
-        <td>${fmt(t.precio_unit)}</td>
-        <td>${fmt(t.sena)}</td>
+        <td style="color:var(--tx2);font-size:11px" title="${t.medidas||''}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${t.medidas||'—'}</td>
+        <td style="text-align:center" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${t.cantidad||1}</td>
+        <td onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${fmt(t.precio_unit)}</td>
+        <td onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${fmt(t.sena)}</td>
         <td style="font-weight:500">${fmt(t.total)}</td>
         <td style="color:var(--tx2)">${t.medio_pago||'—'}</td>
         <td>${saldoH}</td>
