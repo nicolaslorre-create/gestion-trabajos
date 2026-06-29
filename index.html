@@ -381,7 +381,7 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 <!-- BOTTOM SHEET EDICIÓN RÁPIDA -->
-<div class="bsheet-overlay" id="bsheet-overlay" onclick="if(event.target===this)closeBsheet()">
+<div class="bsheet-overlay" id="bsheet-overlay">
   <div class="bsheet">
     <div class="bsheet-handle"></div>
     <div class="bsheet-title" id="bsheet-title">Editar trabajo</div>
@@ -410,7 +410,10 @@ tbody tr:last-child td{border-bottom:none}
         <div class="val" id="bs-saldo" style="color:var(--cst)">$0</div>
       </div>
     </div>
-    <button class="bsheet-btn" id="bs-btn" onclick="guardarBsheet()"><i class="ti ti-check"></i> Guardar</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button class="bsheet-btn" style="background:var(--s2);color:var(--tx)" onclick="closeBsheet()">Cancelar</button>
+      <button class="bsheet-btn" id="bs-btn" onclick="guardarBsheet()"><i class="ti ti-check"></i> Guardar</button>
+    </div>
   </div>
 </div>
 
