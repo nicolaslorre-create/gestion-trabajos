@@ -310,6 +310,7 @@ tbody tr:last-child td{border-bottom:none}
       <div><label>Cantidad</label><input type="number" id="f-qty" value="1" min="1" oninput="calcTotal()"></div>
       <div><label>Precio Unit.</label><input type="number" id="f-precio" placeholder="0" oninput="calcTotal()"></div>
       <div><label>Seña</label><input type="number" id="f-sena" placeholder="0" oninput="calcTotal()"></div>
+      <div><label>Otros gastos</label><input type="number" id="f-extra" placeholder="0" oninput="calcTotal()"></div>
       <div>
         <label>Medio de Pago</label>
         <select id="f-pago"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
@@ -366,6 +367,7 @@ tbody tr:last-child td{border-bottom:none}
       <div><label>Cantidad</label><input type="number" id="edit-qty" min="1" oninput="calcEditTotal()"></div>
       <div><label>Precio Unit.</label><input type="number" id="edit-precio" placeholder="0" oninput="calcEditTotal()"></div>
       <div><label>Seña</label><input type="number" id="edit-sena" placeholder="0" oninput="calcEditTotal()"></div>
+      <div><label>Otros gastos</label><input type="number" id="edit-extra" placeholder="0" oninput="calcEditTotal()"></div>
       <div><label>Medio de Pago</label>
         <select id="edit-pago"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
       </div>
@@ -381,7 +383,7 @@ tbody tr:last-child td{border-bottom:none}
   </div>
 </div>
 <!-- BOTTOM SHEET EDICIÓN RÁPIDA -->
-<div class="bsheet-overlay" id="bsheet-overlay">
+<div class="bsheet-overlay" id="bsheet-overlay" onclick="if(event.target===this)closeBsheet()">
   <div class="bsheet">
     <div class="bsheet-handle"></div>
     <div class="bsheet-title" id="bsheet-title">Editar trabajo</div>
@@ -394,6 +396,10 @@ tbody tr:last-child td{border-bottom:none}
       <div class="bsheet-field">
         <label>Precio Unit.</label>
         <input type="number" id="bs-precio" oninput="calcBsheet()">
+      </div>
+      <div class="bsheet-field">
+        <label>Otros</label>
+        <input type="number" id="bs-extra" oninput="calcBsheet()">
       </div>
       <div class="bsheet-field">
         <label>Seña</label>
@@ -410,10 +416,7 @@ tbody tr:last-child td{border-bottom:none}
         <div class="val" id="bs-saldo" style="color:var(--cst)">$0</div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <button class="bsheet-btn" style="background:var(--s2);color:var(--tx)" onclick="closeBsheet()">Cancelar</button>
-      <button class="bsheet-btn" id="bs-btn" onclick="guardarBsheet()"><i class="ti ti-check"></i> Guardar</button>
-    </div>
+    <button class="bsheet-btn" id="bs-btn" onclick="guardarBsheet()"><i class="ti ti-check"></i> Guardar</button>
   </div>
 </div>
 
@@ -771,7 +774,7 @@ function onCotizadorChange(){
 function closeModal(w){
   document.getElementById('overlay-'+w).classList.remove('open');
   if(w==='nuevo'){
-    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-ancho','f-alto','f-cuit'].forEach(id=>{
+    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-extra','f-ancho','f-alto','f-cuit'].forEach(id=>{
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
     document.getElementById('f-pago').value='';
@@ -789,7 +792,8 @@ function calcTotal(){
   const qty=parseFloat(document.getElementById('f-qty').value)||0;
   const precio=parseFloat(document.getElementById('f-precio').value)||0;
   const sena=parseFloat(document.getElementById('f-sena').value)||0;
-  const total=qty*precio,saldo=total-sena;
+  const extra=parseFloat(document.getElementById('f-extra').value)||0;
+  const total=(qty*precio)+extra,saldo=total-sena;
   document.getElementById('f-total').textContent=fmt(total);
   document.getElementById('f-saldo-calc').textContent=fmt(Math.max(saldo,0));
   document.getElementById('f-saldo-calc').style.color=saldo>0?'var(--cst)':'var(--gnt)';
@@ -802,7 +806,8 @@ async function guardarTarea(){
   const qty=parseFloat(document.getElementById('f-qty').value)||1;
   const precio=parseFloat(document.getElementById('f-precio').value)||0;
   const sena=parseFloat(document.getElementById('f-sena').value)||0;
-  const total=qty*precio,saldo=total-sena;
+  const extra=parseFloat(document.getElementById('f-extra').value)||0;
+  const total=(qty*precio)+extra,saldo=total-sena;
   const ancho=parseFloat(document.getElementById('f-ancho').value)||0;
   const alto=parseFloat(document.getElementById('f-alto').value)||0;
   const medidas=ancho&&alto?`${ancho}x${alto}cm`:'';
@@ -828,7 +833,7 @@ async function guardarTarea(){
     numero,estado:'pendiente',descripcion:desc,cliente_id:clienteId,
     detalles,material_id:matId||null,proceso_ids:procs.length?procs:null,
     medidas,ancho_cm:ancho||null,alto_cm:alto||null,
-    cantidad:qty,precio_unit:precio,sena,total,saldo,
+    cantidad:qty,precio_unit:precio,sena,gastos_extra:extra,total,saldo,
     medio_pago:document.getElementById('f-pago').value,
     cuit:document.getElementById('f-cuit').value,
   }).select('*, clientes(nombre,telefono), materiales!trabajos_material_id_fkey(nombre,espesor)').single();
@@ -852,6 +857,7 @@ function abrirEdicion(id){
   document.getElementById('edit-qty').value=t.cantidad||1;
   document.getElementById('edit-precio').value=t.precio_unit||0;
   document.getElementById('edit-sena').value=t.sena||0;
+  document.getElementById('edit-extra').value=t.gastos_extra||0;
   document.getElementById('edit-pago').value=t.medio_pago||'';
   calcEditTotal();
   openModal('edit');
@@ -861,7 +867,8 @@ function calcEditTotal(){
   const qty=parseFloat(document.getElementById('edit-qty').value)||0;
   const precio=parseFloat(document.getElementById('edit-precio').value)||0;
   const sena=parseFloat(document.getElementById('edit-sena').value)||0;
-  const total=qty*precio;
+  const extra=parseFloat(document.getElementById('edit-extra').value)||0;
+  const total=(qty*precio)+extra;
   const saldo=total-sena;
   document.getElementById('edit-total-preview').textContent=fmt(total);
   document.getElementById('edit-saldo-preview').textContent=fmt(Math.max(saldo,0));
@@ -874,14 +881,15 @@ async function guardarEdicion(){
   const qty=parseFloat(document.getElementById('edit-qty').value)||1;
   const precio=parseFloat(document.getElementById('edit-precio').value)||0;
   const sena=parseFloat(document.getElementById('edit-sena').value)||0;
-  const total=qty*precio;
+  const extra=parseFloat(document.getElementById('edit-extra').value)||0;
+  const total=(qty*precio)+extra;
   const saldo=total-sena;
   const updates={
     descripcion:document.getElementById('edit-desc').value.trim(),
     medidas:document.getElementById('edit-med').value.trim(),
     cantidad:qty,
     precio_unit:precio,
-    sena,total,saldo,
+    sena,gastos_extra:extra,total,saldo,
     medio_pago:document.getElementById('edit-pago').value
   };
   const {error}=await sb.from('trabajos').update(updates).eq('id',editTareaId);
@@ -905,6 +913,7 @@ function abrirBsheet(id){
   document.getElementById('bs-qty').value=t.cantidad||1;
   document.getElementById('bs-precio').value=t.precio_unit||0;
   document.getElementById('bs-sena').value=t.sena||0;
+  document.getElementById('bs-extra').value=t.gastos_extra||0;
   calcBsheet();
   document.getElementById('bsheet-overlay').classList.add('open');
   setTimeout(()=>document.getElementById('bs-precio').focus(),300);
@@ -917,7 +926,8 @@ function calcBsheet(){
   const qty=parseFloat(document.getElementById('bs-qty').value)||0;
   const precio=parseFloat(document.getElementById('bs-precio').value)||0;
   const sena=parseFloat(document.getElementById('bs-sena').value)||0;
-  const total=qty*precio;
+  const extra=parseFloat(document.getElementById('bs-extra').value)||0;
+  const total=(qty*precio)+extra;
   const saldo=Math.max(total-sena,0);
   document.getElementById('bs-total').textContent=fmt(total);
   document.getElementById('bs-saldo').textContent=fmt(saldo);
@@ -930,14 +940,15 @@ async function guardarBsheet(){
   const qty=parseFloat(document.getElementById('bs-qty').value)||1;
   const precio=parseFloat(document.getElementById('bs-precio').value)||0;
   const sena=parseFloat(document.getElementById('bs-sena').value)||0;
-  const total=qty*precio;
+  const extra=parseFloat(document.getElementById('bs-extra').value)||0;
+  const total=(qty*precio)+extra;
   const saldo=Math.max(total-sena,0);
   const {error}=await sb.from('trabajos').update({
-    cantidad:qty,precio_unit:precio,sena,total,saldo
+    cantidad:qty,precio_unit:precio,sena,gastos_extra:extra,total,saldo
   }).eq('id',bsheetId);
   btn.disabled=false;
   if(error){showToast('Error: '+error.message,true);return;}
-  Object.assign(t,{cantidad:qty,precio_unit:precio,sena,total,saldo});
+  Object.assign(t,{cantidad:qty,precio_unit:precio,sena,gastos_extra:extra,total,saldo});
   closeBsheet();
   renderTabla();updateStats();
   showToast('Trabajo #'+t.numero+' actualizado');
