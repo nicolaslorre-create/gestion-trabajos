@@ -460,8 +460,8 @@ function renderMateriales(){
       '<td style="color:var(--tx2);font-size:12px">'+usdLabel+'</td>'+
       '<td style="color:var(--gnt);font-weight:500">'+margen+'</td>'+
       '<td style="color:var(--tx2);font-size:11px">'+precioCm2+'</td>'+
-      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaterial(\\''+m.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
-      '<td style="text-align:center"><button class="btn-icon" onclick="openMaterial(\\''+m.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaterial(\''+m.id+'\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+      '<td style="text-align:center"><button class="btn-icon" onclick="openMaterial(\''+m.id+'\')"><i class="ti ti-pencil"></i></button></td>'+
     '</tr>';
   }).join('');
 }
@@ -583,8 +583,8 @@ function renderProcesos(){
     '<td><span class="proc-chip-preview" style="background:#F3F2EF;color:#5F5E5A"><i class="ti '+(p.icono||'ti-settings')+'" style="font-size:13px"></i>'+p.nombre+'</span></td>'+
     '<td style="color:var(--tx2)"><i class="ti '+(p.icono||'ti-settings')+'" style="font-size:16px"></i> <span style="font-size:11px;color:var(--tx3)">'+(p.icono||'—')+'</span></td>'+
     '<td style="text-align:center;color:var(--tx2)">'+p.orden+'</td>'+
-    '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(p.activo?'checked':'')+' onchange="toggleProceso(\\''+p.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
-    '<td style="text-align:center"><button class="btn-icon" onclick="openProceso(\\''+p.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+    '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(p.activo?'checked':'')+' onchange="toggleProceso(\''+p.id+'\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+    '<td style="text-align:center"><button class="btn-icon" onclick="openProceso(\''+p.id+'\')"><i class="ti ti-pencil"></i></button></td>'+
     '</tr>';
   }).join('');
 }
@@ -676,8 +676,8 @@ function renderMaquinas(){
       '<td style="color:var(--tx2)">'+(m.horas_mensuales||0)+'</td>'+
       '<td style="color:var(--tx2)">'+(m.velocidad_mm_min||'—')+'</td>'+
       '<td style="color:var(--tx2)">'+(m.paso_mm||'—')+'</td>'+
-      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaquina(\\''+m.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
-      '<td style="text-align:center"><button class="btn-icon" onclick="openMaquina(\\''+m.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaquina(\''+m.id+'\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+      '<td style="text-align:center"><button class="btn-icon" onclick="openMaquina(\''+m.id+'\')"><i class="ti ti-pencil"></i></button></td>'+
     '</tr>';
   }).join('');
 }
@@ -809,8 +809,8 @@ function renderUsuarios(){
       '<td style="font-weight:500">'+u.nombre+'</td>'+
       '<td style="color:var(--tx2);font-size:12px">'+(u.email||'—')+'</td>'+
       '<td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:'+rc.bg+';color:'+rc.color+'">'+(ROL_LABELS[u.rol]||u.rol)+'</span></td>'+
-      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(u.activo?'checked':'')+' onchange="toggleUsuario(\\''+u.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
-      '<td style="text-align:center"><button class="btn-icon" onclick="openUsuario(\\''+u.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(u.activo?'checked':'')+' onchange="toggleUsuario(\''+u.id+'\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+      '<td style="text-align:center"><button class="btn-icon" onclick="openUsuario(\''+u.id+'\')"><i class="ti ti-pencil"></i></button></td>'+
     '</tr>';
   }).join('');
 }
