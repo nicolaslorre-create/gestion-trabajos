@@ -121,7 +121,6 @@ tbody tr:hover td{background:var(--s2)}
   <div class="tabs">
     <div class="tab active" onclick="setTab('materiales',this)"><i class="ti ti-stack-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Materiales</div>
     <div class="tab" onclick="setTab('procesos',this)"><i class="ti ti-settings-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Procesos</div>
-    <div class="tab" onclick="setTab('maquinas',this)"><i class="ti ti-cpu" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Máquinas</div>
     <div class="tab" id="tab-usuarios" onclick="setTab('usuarios',this)"><i class="ti ti-users" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Usuarios</div>
   </div>
 
@@ -132,7 +131,14 @@ tbody tr:hover td{background:var(--s2)}
         <div class="section-title">Materiales e insumos</div>
         <div style="font-size:12px;color:var(--tx3);margin-top:2px">Aparecen en el selector del formulario de nueva tarea</div>
       </div>
-      <button class="btn-add" onclick="openMaterial()"><i class="ti ti-plus"></i> Agregar material</button>
+      <div style="display:flex;gap:10px;align-items:center">
+        <div style="display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:6px 10px">
+          <span style="font-size:11px;color:var(--tx3);font-weight:600">USD =</span>
+          <input type="number" id="cotizacion-input" value="1000" style="width:80px;border:none;background:transparent;font-size:13px;font-weight:600;outline:none" onchange="guardarCotizacion()">
+          <span style="font-size:11px;color:var(--tx3)">ARS</span>
+        </div>
+        <button class="btn-add" onclick="openMaterial()"><i class="ti ti-plus"></i> Agregar material</button>
+      </div>
     </div>
     <div class="table-card">
       <table>
@@ -141,16 +147,15 @@ tbody tr:hover td{background:var(--s2)}
             <th>Nombre</th>
             <th>Espesor</th>
             <th>Categoría</th>
-            <th>Dimensiones</th>
             <th>P. Costo</th>
             <th>P. Lista</th>
+            <th>USD</th>
             <th>Margen</th>
-            <th>$/cm²</th>
             <th style="width:60px;text-align:center">Activo</th>
             <th style="width:60px"></th>
           </tr>
         </thead>
-        <tbody id="tbody-mat"><tr><td colspan="8" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
+        <tbody id="tbody-mat"><tr><td colspan="9" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -176,38 +181,6 @@ tbody tr:hover td{background:var(--s2)}
           </tr>
         </thead>
         <tbody id="tbody-proc"><tr><td colspan="5" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- MÁQUINAS -->
-  <div class="section" id="sec-maquinas">
-    <div class="section-header">
-      <div>
-        <div class="section-title">Máquinas</div>
-        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Configuración de equipos para el cotizador automático</div>
-      </div>
-      <button class="btn-add" onclick="openMaquina()"><i class="ti ti-plus"></i> Agregar máquina</button>
-    </div>
-    <div class="table-card">
-      <table>
-        <thead>
-          <tr>
-            <th>Nombre</th>
-            <th>Tipo</th>
-            <th>Consumible</th>
-            <th>Vida útil</th>
-            <th>kWh</th>
-            <th>$/kWh</th>
-            <th>Costo fijo/mes</th>
-            <th>Hs/mes</th>
-            <th>Vel. mm/min</th>
-            <th>Paso mm</th>
-            <th style="width:60px;text-align:center">Activo</th>
-            <th style="width:60px"></th>
-          </tr>
-        </thead>
-        <tbody id="tbody-maq"><tr><td colspan="12" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -250,20 +223,17 @@ tbody tr:hover td{background:var(--s2)}
       <div><label>Espesor</label><input type="text" id="mat-espesor" placeholder="4mm, 1.5mm..."></div>
       <div>
         <label>Categoría</label>
-        <select id="mat-categoria">
-          <option value="Metal">Metal</option>
-          <option value="Acrilico">Acrilico</option>
-          <option value="Madera">Madera</option>
-          <option value="Plastico">Plastico</option>
-          <option value="Piedra">Piedra</option>
-          <option value="Insumo">Insumo</option>
-          <option value="Otro">Otro</option>
-        </select>
+        <div style="display:flex;gap:6px">
+          <select id="mat-categoria" style="flex:1"></select>
+          <button type="button" class="btn-icon" onclick="agregarCategoriaRapida()" title="Nueva categoría"><i class="ti ti-plus"></i></button>
+        </div>
       </div>
-      <div><label>Ancho placa (cm)</label><input type="number" id="mat-ancho" placeholder="0" oninput="calcMargen()"></div>
-      <div><label>Alto placa (cm)</label><input type="number" id="mat-alto" placeholder="0" oninput="calcMargen()"></div>
-      <div><label>Precio Costo (placa)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen()"></div>
-      <div><label>Precio Lista (placa)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Unidad</label><input type="text" id="mat-unidad" placeholder="mm, cm, m2..." value="mm"></div>
+      <div><label>Precio Costo (ARS)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
+      <div><label>Precio Lista (ARS)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
+      <div><label>Precio Costo (USD)</label><input type="number" id="mat-costo-usd" placeholder="0" oninput="syncArsFromUsd()"></div>
+      <div><label>Precio Lista (USD)</label><input type="number" id="mat-lista-usd" placeholder="0" oninput="syncArsFromUsd()"></div>
+      <div class="ff" style="font-size:11px;color:var(--tx3)"><i class="ti ti-info-circle" style="margin-right:4px;vertical-align:-1px"></i>Cotización actual: $<span id="cot-display">1000</span> ARS/USD — los campos se sincronizan automáticamente</div>
       <div class="ff margen-preview" id="margen-preview"></div>
     </div>
     <div class="modal-footer">
@@ -357,53 +327,13 @@ tbody tr:hover td{background:var(--s2)}
     </div>
   </div>
 </div>
-<!-- MODAL MÁQUINA -->
-<div class="overlay" id="overlay-maq" onclick="if(event.target===this)closeModal('maq')">
-  <div class="modal" style="width:540px">
-    <div class="modal-header">
-      <div class="modal-title" id="maq-modal-title">Nueva Máquina</div>
-      <button class="modal-close" onclick="closeModal('maq')"><i class="ti ti-x"></i></button>
-    </div>
-    <div class="fg">
-      <div class="ff"><label>Nombre</label><input type="text" id="maq-nombre" placeholder="CO2 grande, Fibra 30W..."></div>
-      <div>
-        <label>Tipo</label>
-        <select id="maq-tipo">
-          <option value="CO2">CO2</option>
-          <option value="Fibra">Fibra</option>
-          <option value="Diodo">Diodo LED</option>
-          <option value="CNC">CNC Router</option>
-          <option value="Plasma">Plasma</option>
-          <option value="Otro">Otro</option>
-        </select>
-      </div>
-      <div><label>Costo consumible (ARS)</label><input type="number" id="maq-consumible" placeholder="0" oninput="calcMaquina()"></div>
-      <div><label>Vida útil consumible (hs)</label><input type="number" id="maq-vida" placeholder="0" oninput="calcMaquina()"></div>
-      <div><label>Consumo eléctrico (kWh)</label><input type="number" id="maq-kwh" placeholder="0" oninput="calcMaquina()"></div>
-      <div><label>Precio kWh (ARS)</label><input type="number" id="maq-precio-kwh" placeholder="0" oninput="calcMaquina()"></div>
-      <div><label>Costo fijo mensual (ARS)</label><input type="number" id="maq-overhead" placeholder="0" oninput="calcMaquina()"></div>
-      <div><label>Promedio horas trabajo/mes</label><input type="number" id="maq-horas-mes" placeholder="160" value="160" oninput="calcMaquina()"></div>
-      <div><label>Velocidad promedio (mm/min)</label><input type="number" id="maq-velocidad" placeholder="3000" oninput="calcMaquina()"></div>
-      <div><label>Paso promedio (mm)</label><input type="number" id="maq-paso" placeholder="0.1" step="0.01" oninput="calcMaquina()"></div>
-      <div class="ff" id="maq-preview" style="display:none;background:var(--s2);border-radius:var(--r);padding:12px;font-size:12px;color:var(--tx2);line-height:1.8"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-delete" id="maq-btn-delete" style="display:none" onclick="deleteMaquina()"><i class="ti ti-trash"></i> Eliminar</button>
-      <div class="modal-footer-right">
-        <button class="btn-cancel" onclick="closeModal('maq')">Cancelar</button>
-        <button class="btn-save" onclick="guardarMaquina()"><i class="ti ti-check"></i> Guardar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
 // sb viene de auth.js
 
-let materiales=[], procesos=[], maquinas=[];
-let editMatId=null, editProcId=null, editMaqId=null;
+let materiales=[], procesos=[], categorias=[], cotizacionUSD=1000;
+let editMatId=null, editProcId=null;
 
 const CAT_COLORS={
   'Metal':'#E6EEF8','Acrilico':'#EAF3DE','Madera':'#FFF0DC',
@@ -423,41 +353,41 @@ function setTab(name,btn){
   btn.classList.add('active');
   document.getElementById('sec-'+name).classList.add('active');
   if(name==='usuarios') cargarUsuarios();
-  if(name==='maquinas') renderMaquinas();
 }
 
 // ── CARGAR ────────────────────────────────────────────
 async function cargarTodo(){
-  const [{data:m},{data:p},{data:mq}]=await Promise.all([
+  const [{data:m},{data:p},{data:cat},{data:cfg}]=await Promise.all([
     sb.from('materiales').select('*').order('categoria').order('nombre').order('espesor'),
     sb.from('procesos').select('*').order('orden'),
-    sb.from('maquinas').select('*').order('nombre')
+    sb.from('categorias_material').select('*').order('orden').order('nombre'),
+    sb.from('config').select('*').eq('id',1).single()
   ]);
-  materiales=m||[]; procesos=p||[]; maquinas=mq||[];
-  renderMateriales(); renderProcesos(); renderMaquinas();
+  materiales=m||[]; procesos=p||[]; categorias=cat||[];
+  cotizacionUSD=cfg?.cotizacion_usd||1000;
+  renderMateriales(); renderProcesos();
+  const cotInput=document.getElementById('cotizacion-input');
+  if(cotInput) cotInput.value=cotizacionUSD;
 }
 
 // ── MATERIALES ────────────────────────────────────────
 function renderMateriales(){
   const tbody=document.getElementById('tbody-mat');
-  if(!materiales.length){tbody.innerHTML='<tr><td colspan="8" class="empty">No hay materiales aún</td></tr>';return;}
+  if(!materiales.length){tbody.innerHTML='<tr><td colspan="9" class="empty">No hay materiales aún</td></tr>';return;}
   tbody.innerHTML=materiales.map(m=>{
     const margen=m.precio_costo>0&&m.precio_lista>0
       ?Math.round((m.precio_lista-m.precio_costo)/m.precio_costo*100)+'%' : '—';
     const cc=CAT_COLORS[m.categoria]||CAT_COLORS['Otro'];
     const ct=CAT_TC[m.categoria]||CAT_TC['Otro'];
-    const area=(m.ancho_cm||0)*(m.alto_cm||0);
-    const precioCm2=area>0&&m.precio_costo>0?'$'+(m.precio_costo/area).toFixed(4)+'/cm²':'—';
-    const dims=(m.ancho_cm&&m.alto_cm)?`${m.ancho_cm}×${m.alto_cm}cm`:'—';
+    const usdLabel=m.precio_lista_usd>0?'US$'+m.precio_lista_usd.toLocaleString('es-AR'):'—';
     return `<tr>
       <td style="font-weight:500">${m.nombre}</td>
       <td style="color:var(--tx2)">${m.espesor||'—'}</td>
       <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${cc};color:${ct}">${m.categoria||'—'}</span></td>
-      <td style="color:var(--tx2);font-size:12px">${dims}</td>
       <td>${fmt(m.precio_costo)}</td>
       <td>${fmt(m.precio_lista)}</td>
+      <td style="color:var(--tx2);font-size:12px">${usdLabel}</td>
       <td style="color:var(--gnt);font-weight:500">${margen}</td>
-      <td style="color:var(--tx2);font-size:11px">${precioCm2}</td>
       <td style="text-align:center">
         <label class="toggle"><input type="checkbox" ${m.activo?'checked':''} onchange="toggleMaterial('${m.id}',this.checked)"><span class="toggle-slider"></span></label>
       </td>
@@ -468,35 +398,76 @@ function renderMateriales(){
   }).join('');
 }
 
+function populateCategoriaSelect(selected){
+  const sel=document.getElementById('mat-categoria');
+  sel.innerHTML=categorias.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
+  if(selected) sel.value=selected;
+}
 function openMaterial(id){
   editMatId=id||null;
   const m=id?materiales.find(x=>x.id===id):null;
   document.getElementById('mat-modal-title').textContent=m?'Editar Material':'Nuevo Material';
   document.getElementById('mat-nombre').value=m?.nombre||'';
   document.getElementById('mat-espesor').value=m?.espesor||'';
-  document.getElementById('mat-categoria').value=m?.categoria||'Metal';
-  document.getElementById('mat-ancho').value=m?.ancho_cm||'';
-  document.getElementById('mat-alto').value=m?.alto_cm||'';
+  populateCategoriaSelect(m?.categoria||categorias[0]?.nombre);
+  document.getElementById('mat-unidad').value=m?.unidad||'mm';
   document.getElementById('mat-costo').value=m?.precio_costo||'';
   document.getElementById('mat-lista').value=m?.precio_lista||'';
+  document.getElementById('mat-costo-usd').value=m?.precio_costo_usd||'';
+  document.getElementById('mat-lista-usd').value=m?.precio_lista_usd||'';
+  document.getElementById('cot-display').textContent=cotizacionUSD.toLocaleString('es-AR');
   document.getElementById('mat-btn-delete').style.display=m?'flex':'none';
   document.getElementById('margen-preview').style.display='none';
   document.getElementById('overlay-mat').classList.add('open');
   setTimeout(()=>document.getElementById('mat-nombre').focus(),100);
 }
 
+// Sincronización ARS <-> USD
+let syncing=false;
+function syncUsdFromArs(){
+  if(syncing)return; syncing=true;
+  const costoArs=parseFloat(document.getElementById('mat-costo').value)||0;
+  const listaArs=parseFloat(document.getElementById('mat-lista').value)||0;
+  if(costoArs>0) document.getElementById('mat-costo-usd').value=(costoArs/cotizacionUSD).toFixed(2);
+  if(listaArs>0) document.getElementById('mat-lista-usd').value=(listaArs/cotizacionUSD).toFixed(2);
+  syncing=false;
+}
+function syncArsFromUsd(){
+  if(syncing)return; syncing=true;
+  const costoUsd=parseFloat(document.getElementById('mat-costo-usd').value)||0;
+  const listaUsd=parseFloat(document.getElementById('mat-lista-usd').value)||0;
+  if(costoUsd>0) document.getElementById('mat-costo').value=Math.round(costoUsd*cotizacionUSD);
+  if(listaUsd>0) document.getElementById('mat-lista').value=Math.round(listaUsd*cotizacionUSD);
+  syncing=false;
+  calcMargen();
+}
+
+async function agregarCategoriaRapida(){
+  const nombre=prompt('Nombre de la nueva categoría:');
+  if(!nombre||!nombre.trim())return;
+  const {data,error}=await sb.from('categorias_material').insert({nombre:nombre.trim(),orden:categorias.length}).select().single();
+  if(error){showToast('Error: '+error.message,true);return;}
+  categorias.push(data);
+  populateCategoriaSelect(data.nombre);
+  showToast('Categoría agregada');
+}
+
+async function guardarCotizacion(){
+  const val=parseFloat(document.getElementById('cotizacion-input').value)||1000;
+  cotizacionUSD=val;
+  const {error}=await sb.from('config').update({cotizacion_usd:val,updated_at:new Date().toISOString()}).eq('id',1);
+  if(error){showToast('Error: '+error.message,true);return;}
+  showToast('Cotización actualizada: $'+val.toLocaleString('es-AR'));
+}
+
 function calcMargen(){
   const costo=parseFloat(document.getElementById('mat-costo').value)||0;
   const lista=parseFloat(document.getElementById('mat-lista').value)||0;
-  const ancho=parseFloat(document.getElementById('mat-ancho').value)||0;
-  const alto=parseFloat(document.getElementById('mat-alto').value)||0;
   const el=document.getElementById('margen-preview');
   if(costo>0&&lista>0){
     const m=Math.round((lista-costo)/costo*100);
-    const area=ancho*alto;
-    const cm2txt=area>0?` · <strong>$${(costo/area).toFixed(4)}/cm²</strong>`:'';
     el.style.display='block';
-    el.innerHTML=`<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>${m}%</strong> — ganancia ${fmt(lista-costo)} por placa${cm2txt}`;
+    el.innerHTML=`<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>${m}%</strong> — ganancia ${fmt(lista-costo)} por unidad`;
     el.style.color=m>0?'var(--gnt)':'#C0392B';
     el.style.background=m>0?'var(--gnl)':'#FFF0F0';
     el.style.borderColor=m>0?'#AADDA0':'#F5C0C0';
@@ -510,10 +481,11 @@ async function guardarMaterial(){
     nombre,
     espesor:document.getElementById('mat-espesor').value.trim(),
     categoria:document.getElementById('mat-categoria').value,
-    ancho_cm:parseFloat(document.getElementById('mat-ancho').value)||0,
-    alto_cm:parseFloat(document.getElementById('mat-alto').value)||0,
+    unidad:document.getElementById('mat-unidad').value.trim(),
     precio_costo:parseFloat(document.getElementById('mat-costo').value)||0,
     precio_lista:parseFloat(document.getElementById('mat-lista').value)||0,
+    precio_costo_usd:parseFloat(document.getElementById('mat-costo-usd').value)||0,
+    precio_lista_usd:parseFloat(document.getElementById('mat-lista-usd').value)||0,
     activo:true
   };
   let error;
@@ -662,143 +634,6 @@ async function deleteProceso(){
   }
 });
   showToast('Proceso eliminado');
-}
-
-// ── MÁQUINAS ──────────────────────────────────────────
-const TIPO_COLORS={
-  'CO2':{bg:'#FEF6EE',color:'#7A3D00'},
-  'Fibra':{bg:'#EEF3FB',color:'#0C3D8A'},
-  'Diodo':{bg:'#F0F7EA',color:'#2D5A1B'},
-  'CNC':{bg:'#F3F2EF',color:'#3C3489'},
-  'Plasma':{bg:'#FBEAF0',color:'#72243E'},
-  'Otro':{bg:'#F3F2EF',color:'#5F5E5A'}
-};
-
-function renderMaquinas(){
-  const tbody=document.getElementById('tbody-maq');
-  if(!tbody)return;
-  if(!maquinas.length){tbody.innerHTML='<tr><td colspan="11" class="empty">No hay máquinas aún</td></tr>';return;}
-  tbody.innerHTML=maquinas.map(m=>{
-    const tc=TIPO_COLORS[m.tipo]||TIPO_COLORS['Otro'];
-    return`<tr>
-      <td style="font-weight:500">${m.nombre}</td>
-      <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${tc.bg};color:${tc.color}">${m.tipo||'—'}</span></td>
-      <td>${fmt(m.costo_consumible)}</td>
-      <td style="color:var(--tx2)">${m.vida_util_horas||0} hs</td>
-      <td style="color:var(--tx2)">${m.consumo_kwh||0}</td>
-      <td style="color:var(--tx2)">${fmt(m.precio_kwh)}</td>
-      <td>${fmt(m.overhead_mensual)}</td>
-      <td style="color:var(--tx2)">${m.horas_mensuales||0}</td>
-      <td style="color:var(--tx2)">${m.velocidad_mm_min||'—'}</td>
-      <td style="color:var(--tx2)">${m.paso_mm||'—'}</td>
-      <td style="text-align:center">
-        <label class="toggle"><input type="checkbox" ${m.activo?'checked':''} onchange="toggleMaquina('${m.id}',this.checked)"><span class="toggle-slider"></span></label>
-      </td>
-      <td style="text-align:center">
-        <button class="btn-icon" onclick="openMaquina('${m.id}')"><i class="ti ti-pencil"></i></button>
-      </td>
-    </tr>`;
-  }).join('');
-}
-
-function calcMaquina(){
-  const consumible=parseFloat(document.getElementById('maq-consumible').value)||0;
-  const vida=parseFloat(document.getElementById('maq-vida').value)||0;
-  const kwh=parseFloat(document.getElementById('maq-kwh').value)||0;
-  const precioKwh=parseFloat(document.getElementById('maq-precio-kwh').value)||0;
-  const overhead=parseFloat(document.getElementById('maq-overhead').value)||0;
-  const horasMes=parseFloat(document.getElementById('maq-horas-mes').value)||160;
-  const velocidad=parseFloat(document.getElementById('maq-velocidad').value)||0;
-  const paso=parseFloat(document.getElementById('maq-paso').value)||0;
-  const el=document.getElementById('maq-preview');
-  if(consumible>0||kwh>0||overhead>0){
-    const costoCons=vida>0?consumible/vida:0;
-    const costoElec=kwh*precioKwh;
-    const costoOver=horasMes>0?overhead/horasMes:0;
-    const totalHora=costoCons+costoElec+costoOver;
-    const minCm2=(velocidad>0&&paso>0)?100/(velocidad*paso):0;
-    const costoCm2=minCm2>0?totalHora/60*minCm2:0;
-    el.style.display='block';
-    el.innerHTML=`
-      <strong style="color:var(--tx);display:block;margin-bottom:4px">Costo por hora de trabajo:</strong>
-      Consumible: ${fmt(costoCons)}/hs &nbsp;·&nbsp; Electricidad: ${fmt(costoElec)}/hs &nbsp;·&nbsp; Costo fijo: ${fmt(costoOver)}/hs<br>
-      <strong style="color:var(--or)">Total máquina: ${fmt(totalHora)}/hs</strong>
-      ${minCm2>0?`<br><span style="color:var(--tx3);font-size:11px">Tarifa calculada: ${minCm2.toFixed(4)} min/cm² · Costo máquina: ${fmt(costoCm2)}/cm²</span>`:''}
-    `;
-  } else { el.style.display='none'; }
-}
-
-function openMaquina(id){
-  editMaqId=id||null;
-  const m=id?maquinas.find(x=>x.id===id):null;
-  document.getElementById('maq-modal-title').textContent=m?'Editar Máquina':'Nueva Máquina';
-  document.getElementById('maq-nombre').value=m?.nombre||'';
-  document.getElementById('maq-tipo').value=m?.tipo||'CO2';
-  document.getElementById('maq-consumible').value=m?.costo_consumible||'';
-  document.getElementById('maq-vida').value=m?.vida_util_horas||'';
-  document.getElementById('maq-kwh').value=m?.consumo_kwh||'';
-  document.getElementById('maq-precio-kwh').value=m?.precio_kwh||'';
-  document.getElementById('maq-overhead').value=m?.overhead_mensual||'';
-  document.getElementById('maq-horas-mes').value=m?.horas_mensuales||160;
-  document.getElementById('maq-velocidad').value=m?.velocidad_mm_min||'';
-  document.getElementById('maq-paso').value=m?.paso_mm||'';
-  document.getElementById('maq-btn-delete').style.display=m?'flex':'none';
-  document.getElementById('maq-preview').style.display='none';
-  document.getElementById('overlay-maq').classList.add('open');
-  setTimeout(()=>document.getElementById('maq-nombre').focus(),100);
-}
-
-async function guardarMaquina(){
-  const nombre=document.getElementById('maq-nombre').value.trim();
-  if(!nombre){showToast('Ingresá un nombre',true);return;}
-  const payload={
-    nombre,
-    tipo:document.getElementById('maq-tipo').value,
-    costo_consumible:parseFloat(document.getElementById('maq-consumible').value)||0,
-    vida_util_horas:parseFloat(document.getElementById('maq-vida').value)||0,
-    consumo_kwh:parseFloat(document.getElementById('maq-kwh').value)||0,
-    precio_kwh:parseFloat(document.getElementById('maq-precio-kwh').value)||0,
-    overhead_mensual:parseFloat(document.getElementById('maq-overhead').value)||0,
-    horas_mensuales:parseFloat(document.getElementById('maq-horas-mes').value)||160,
-    velocidad_mm_min:parseFloat(document.getElementById('maq-velocidad').value)||0,
-    paso_mm:parseFloat(document.getElementById('maq-paso').value)||0,
-    tarifa_min_cm2:(()=>{
-      const v=parseFloat(document.getElementById('maq-velocidad').value)||0;
-      const p=parseFloat(document.getElementById('maq-paso').value)||0;
-      return(v>0&&p>0)?100/(v*p):0;
-    })(),
-    activo:true
-  };
-  let error;
-  if(editMaqId){
-    ({error}=await sb.from('maquinas').update(payload).eq('id',editMaqId));
-  } else {
-    ({error}=await sb.from('maquinas').insert(payload));
-  }
-  if(error){showToast('Error: '+error.message,true);return;}
-  closeModal('maq');
-  const {data}=await sb.from('maquinas').select('*').order('nombre');
-  maquinas=data||[];
-  renderMaquinas();
-  showToast(editMaqId?'Máquina actualizada':'Máquina creada');
-}
-
-async function toggleMaquina(id,val){
-  const {error}=await sb.from('maquinas').update({activo:val}).eq('id',id);
-  if(error){showToast('Error: '+error.message,true);return;}
-  const m=maquinas.find(x=>x.id===id);
-  if(m) m.activo=val;
-}
-
-async function deleteMaquina(){
-  if(!confirm('¿Eliminar esta máquina?'))return;
-  const {error}=await sb.from('maquinas').delete().eq('id',editMaqId);
-  if(error){showToast('Error: '+error.message,true);return;}
-  closeModal('maq');
-  const {data}=await sb.from('maquinas').select('*').order('nombre');
-  maquinas=data||[];
-  renderMaquinas();
-  showToast('Máquina eliminada');
 }
 
 // ── HELPERS ───────────────────────────────────────────
