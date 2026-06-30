@@ -117,7 +117,7 @@ tbody tr:last-child td{border-bottom:none}
 .bsheet-handle{width:36px;height:4px;background:var(--bd);border-radius:2px;margin:0 auto 18px}
 .bsheet-title{font-size:15px;font-weight:600;margin-bottom:4px}
 .bsheet-sub{font-size:12px;color:var(--tx3);margin-bottom:18px}
-.bsheet-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}@media(min-width:480px){.bsheet-fields{grid-template-columns:repeat(4,1fr)}}
+.bsheet-fields{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
 .bsheet-field label{display:block;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:5px}
 .bsheet-field input{width:100%;padding:10px 11px;border:1.5px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:15px;color:var(--tx);background:var(--surface);outline:none;transition:border-color .15s}
 .bsheet-field input:focus{border-color:var(--or)}
@@ -270,7 +270,7 @@ tbody tr:last-child td{border-bottom:none}
 <div class="dropdown" id="dropdown"></div>
 
 <!-- MODAL NUEVA TAREA -->
-<div class="overlay" id="overlay-nuevo" onclick="if(event.target===this)closeModal('nuevo')">
+<div class="overlay" id="overlay-nuevo">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title"><i class="ti ti-plus" style="color:var(--or);margin-right:6px"></i>Nueva Tarea</div>
@@ -294,7 +294,15 @@ tbody tr:last-child td{border-bottom:none}
           <option value="">— Seleccionar —</option>
         </select>
       </div>
-      <div><label>Medidas</label><input type="text" id="f-med" placeholder="30x20cm, 40x60cm..."></div>
+      <div>
+        <label>Máquina</label>
+        <select id="f-maq-id" onchange="onCotizadorChange()">
+          <option value="">— Seleccionar —</option>
+        </select>
+      </div>
+      <div><label>Ancho (cm)</label><input type="number" id="f-ancho" placeholder="0" step="0.1" oninput="onCotizadorChange()"></div>
+      <div><label>Alto (cm)</label><input type="number" id="f-alto" placeholder="0" step="0.1" oninput="onCotizadorChange()"></div>
+      <div class="ff" id="cotizador-result" style="display:none;background:var(--orl);border:1px solid #F5C89A;border-radius:var(--r);padding:12px;font-size:12px;color:var(--ort);line-height:1.8"></div>
       <div>
         <label>Procesos</label>
         <div class="proc-grid" id="proc-grid"><span style="color:var(--tx3);font-size:12px">Cargando...</span></div>
@@ -321,7 +329,7 @@ tbody tr:last-child td{border-bottom:none}
 </div>
 
 <!-- MODAL PAGO -->
-<div class="overlay" id="overlay-pago" onclick="if(event.target===this)closeModal('pago')">
+<div class="overlay" id="overlay-pago">
   <div class="modal" style="width:380px">
     <div class="modal-header">
       <div class="modal-title"><i class="ti ti-cash" style="color:var(--gn);margin-right:6px"></i>Registrar Pago</div>
@@ -347,7 +355,7 @@ tbody tr:last-child td{border-bottom:none}
 
 
 <!-- MODAL EDITAR TRABAJO -->
-<div class="overlay" id="overlay-edit" onclick="if(event.target===this)closeModal('edit')">
+<div class="overlay" id="overlay-edit">
   <div class="modal" style="width:480px">
     <div class="modal-header">
       <div class="modal-title"><i class="ti ti-pencil" style="color:var(--or);margin-right:6px"></i>Editar Trabajo <span id="edit-numero" style="color:var(--tx3);font-weight:400;font-size:14px"></span></div>
@@ -380,7 +388,7 @@ tbody tr:last-child td{border-bottom:none}
     <div class="bsheet-handle"></div>
     <div class="bsheet-title" id="bsheet-title">Editar trabajo</div>
     <div class="bsheet-sub" id="bsheet-sub"></div>
-    <div class="bsheet-fields" style="grid-template-columns:1fr 1fr 1fr 1fr">
+    <div class="bsheet-fields">
       <div class="bsheet-field">
         <label>Cantidad</label>
         <input type="number" id="bs-qty" min="1" oninput="calcBsheet()">
@@ -417,7 +425,7 @@ tbody tr:last-child td{border-bottom:none}
 <script>
 // sb, currentUser, can() vienen de auth.js
 
-let tareas=[],clientes=[],materiales=[],procesos=[],filtro='all',pagoTareaId=null,editTareaId=null,bsheetId=null;
+let tareas=[],clientes=[],materiales=[],procesos=[],maquinas=[],filtro='all',pagoTareaId=null,editTareaId=null,bsheetId=null;
 
 function fmt(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -437,28 +445,23 @@ function renderProcChips(){
   grid.innerHTML=procesos.map(p=>`<div class="proc-chip" data-value="${p.nombre}" onclick="toggleProc(this)"><i class="ti ${p.icono||'ti-settings'}" style="font-size:12px"></i> ${p.nombre}</div>`).join('');
 
 }
-function onMatChange(){
-  // auto-fill espesor in medidas hint if empty
-  const sel=document.getElementById('f-mat-id');
-  const opt=sel.options[sel.selectedIndex];
-  // nothing extra needed for now
-}
 function toggleProc(el){ el.classList.toggle('selected'); }
 function getProcesos(){ return [...document.querySelectorAll('.proc-chip.selected')].map(c=>c.dataset.value); }
 function resetProcesos(){ document.querySelectorAll('.proc-chip').forEach(c=>c.classList.remove('selected')); }
 
 // ── DATOS ─────────────────────────────────────────────
 async function cargarTodo(){
-  const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4}]=await Promise.all([
+  const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4},{data:mq,error:e5}]=await Promise.all([
     sb.from('trabajos').select('*, clientes(nombre,telefono), materiales!trabajos_material_id_fkey(nombre,espesor)').eq('archivado',false).order('fecha',{ascending:false}),
     sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre'),
     sb.from('materiales').select('*').eq('activo',true).order('categoria').order('nombre').order('espesor'),
-    sb.from('procesos').select('*').eq('activo',true).order('orden')
+    sb.from('procesos').select('*').eq('activo',true).order('orden'),
+    sb.from('maquinas').select('*').eq('activo',true).order('nombre')
   ]);
   if(e1){showToast('Error trabajos: '+e1.message,true);return;}
   if(e3){showToast('Error materiales: '+e3.message,true);}
   if(e4){showToast('Error procesos: '+e4.message,true);}
-  tareas=t||[];clientes=c||[];materiales=m||[];procesos=p||[];
+  tareas=t||[];clientes=c||[];materiales=m||[];procesos=p||[];maquinas=mq||[];
   renderTabla();updateStats();renderProcChips();
 }
 
@@ -555,20 +558,20 @@ function renderTabla(){
       const saldoH=t.saldo>0?`<span class="saldo-pos">${fmt(t.saldo)}</span>`:`<span class="saldo-zero">—</span>`;
       const cli=t.clientes?.nombre||'—';
       const tel=t.clientes?.telefono||'—';
-      html+=`<tr class="${g.rowCls}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">
+      html+=`<tr class="${g.rowCls}">
         <td style="text-align:center">${chkEst}</td>
         <td style="color:var(--tx3);font-size:11px">${fmtFecha(t.fecha)}</td>
         <td class="mono">${t.numero||'—'}</td>
         <td><span class="pill ${g.pillCls}">${g.pillTxt}</span></td>
-        <td title="${t.descripcion||''}">${t.descripcion||'—'}</td>
-        <td title="${cli}">${cli}</td>
+        <td title="${t.descripcion||''}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${t.descripcion||'—'}</td>
+        <td title="${cli}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${cli}</td>
         <td title="${tel}" style="color:var(--tx2)">${tel}</td>
         <td>${buildProcChips(t)}</td>
         <td style="color:var(--tx2);font-size:12px">${buildMatLabel(t)}</td>
-        <td style="color:var(--tx2);font-size:11px" title="${t.medidas||''}">${t.medidas||'—'}</td>
-        <td style="text-align:center">${t.cantidad||1}</td>
-        <td>${fmt(t.precio_unit)}</td>
-        <td>${fmt(t.sena)}</td>
+        <td style="color:var(--tx2);font-size:11px" title="${t.medidas||''}" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${t.medidas||'—'}</td>
+        <td style="text-align:center" onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${t.cantidad||1}</td>
+        <td onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${fmt(t.precio_unit)}</td>
+        <td onclick="abrirBsheet('${t.id}')" style="cursor:pointer">${fmt(t.sena)}</td>
         <td style="font-weight:500">${fmt(t.total)}</td>
         <td style="color:var(--tx2)">${t.medio_pago||'—'}</td>
         <td>${saldoH}</td>
@@ -698,7 +701,7 @@ document.addEventListener('click',e=>{if(!e.target.closest('.autocomplete-wrap')
 // ── MODALES ───────────────────────────────────────────
 function openModal(w){
   document.getElementById('overlay-'+w).classList.add('open');
-  if(w==='nuevo') populateMatSelect();
+  if(w==='nuevo'){ populateMatSelect(); populateMaqSelect(); }
 }
 function populateMatSelect(){
   const sel=document.getElementById('f-mat-id');
@@ -719,14 +722,65 @@ function populateMatSelect(){
     sel.appendChild(grp);
   });
 }
+function populateMaqSelect(){
+  const sel=document.getElementById('f-maq-id');
+  if(!sel) return;
+  sel.innerHTML='<option value="">— Sin cotizar —</option>';
+  maquinas.forEach(mq=>{
+    const opt=document.createElement('option');
+    opt.value=mq.id;
+    opt.textContent=mq.nombre+(mq.tipo?' ('+mq.tipo+')':'');
+    sel.appendChild(opt);
+  });
+}
+function onMatChange(){ onCotizadorChange(); }
+function onCotizadorChange(){
+  const matId=document.getElementById('f-mat-id').value;
+  const maqId=document.getElementById('f-maq-id').value;
+  const ancho=parseFloat(document.getElementById('f-ancho').value)||0;
+  const alto=parseFloat(document.getElementById('f-alto').value)||0;
+  const resEl=document.getElementById('cotizador-result');
+  if(!matId||!maqId||!ancho||!alto){resEl.style.display='none';return;}
+  const mat=materiales.find(x=>x.id===matId);
+  const maq=maquinas.find(x=>x.id===maqId);
+  if(!mat||!maq){resEl.style.display='none';return;}
+  const area=ancho*alto;
+  // Costo material por cm²
+  const areaPlaca=(mat.ancho_cm||0)*(mat.alto_cm||0);
+  const precioCm2=areaPlaca>0?(mat.precio_costo||0)/areaPlaca:0;
+  const costoMat=precioCm2*area;
+  // Costo máquina por hora → por cm²
+  const costoCons=maq.vida_util_horas>0?(maq.costo_consumible||0)/maq.vida_util_horas:0;
+  const costoElec=(maq.consumo_kwh||0)*(maq.precio_kwh||0);
+  const costoOver=maq.horas_mensuales>0?(maq.overhead_mensual||0)/maq.horas_mensuales:0;
+  const costoHora=costoCons+costoElec+costoOver;
+  const minCm2=(maq.velocidad_mm_min>0&&maq.paso_mm>0)?100/(maq.velocidad_mm_min*maq.paso_mm):0;
+  const costoMaq=minCm2>0?(costoHora/60)*minCm2*area:0;
+  // Precio sugerido con margen del material
+  const costoTotal=costoMat+costoMaq;
+  const margen=mat.precio_lista>0&&mat.precio_costo>0?(mat.precio_lista-mat.precio_costo)/mat.precio_costo:0;
+  const precioSugerido=costoTotal*(1+margen);
+  // Mostrar desglose y llenar precio
+  resEl.style.display='block';
+  resEl.innerHTML=`
+    <strong style="display:block;margin-bottom:4px"><i class="ti ti-calculator" style="margin-right:5px;vertical-align:-2px"></i>Cotización — ${ancho}×${alto}cm (${area}cm²)</strong>
+    Material: ${fmt(costoMat)} &nbsp;·&nbsp; Máquina: ${fmt(costoMaq)}<br>
+    Costo total: <strong>${fmt(costoTotal)}</strong> &nbsp;·&nbsp; Margen ${Math.round(margen*100)}%<br>
+    <strong style="font-size:15px;color:var(--ort)">Precio sugerido: ${fmt(precioSugerido)}</strong>
+  `;
+  document.getElementById('f-precio').value=Math.round(precioSugerido);
+  calcTotal();
+}
 function closeModal(w){
   document.getElementById('overlay-'+w).classList.remove('open');
   if(w==='nuevo'){
-    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-extra','f-med','f-cuit'].forEach(id=>{
+    ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-extra','f-ancho','f-alto','f-cuit'].forEach(id=>{
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
     document.getElementById('f-pago').value='';
     const ms=document.getElementById('f-mat-id');if(ms)ms.value='';
+    const mq=document.getElementById('f-maq-id');if(mq)mq.value='';
+    document.getElementById('cotizador-result').style.display='none';
     document.getElementById('f-total').textContent='$0';
     document.getElementById('f-saldo-calc').textContent='$0';
     resetProcesos();
@@ -754,6 +808,9 @@ async function guardarTarea(){
   const sena=parseFloat(document.getElementById('f-sena').value)||0;
   const extra=parseFloat(document.getElementById('f-extra').value)||0;
   const total=(qty*precio)+extra,saldo=total-sena;
+  const ancho=parseFloat(document.getElementById('f-ancho').value)||0;
+  const alto=parseFloat(document.getElementById('f-alto').value)||0;
+  const medidas=ancho&&alto?`${ancho}x${alto}cm`:'';
   // Construir detalles: material + procesos
   const sel=document.getElementById('f-mat-id');
   const opt=sel?sel.options[sel.selectedIndex]:null;
@@ -775,7 +832,7 @@ async function guardarTarea(){
   const {data,error}=await sb.from('trabajos').insert({
     numero,estado:'pendiente',descripcion:desc,cliente_id:clienteId,
     detalles,material_id:matId||null,proceso_ids:procs.length?procs:null,
-    medidas:document.getElementById('f-med').value,
+    medidas,ancho_cm:ancho||null,alto_cm:alto||null,
     cantidad:qty,precio_unit:precio,sena,gastos_extra:extra,total,saldo,
     medio_pago:document.getElementById('f-pago').value,
     cuit:document.getElementById('f-cuit').value,
