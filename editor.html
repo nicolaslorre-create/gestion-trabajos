@@ -29,7 +29,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .page-title{font-size:22px;font-weight:600;letter-spacing:-.4px;margin-bottom:6px}
 .page-sub{font-size:13px;color:var(--tx2);margin-bottom:24px}
 
-/* TABS */
 .tabs{display:flex;gap:0;border-bottom:2px solid var(--bd);margin-bottom:24px}
 .tab{padding:10px 20px;font-size:14px;font-weight:500;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s}
 .tab:hover{color:var(--tx)}
@@ -37,13 +36,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 
 .section{display:none}.section.active{display:block}
 
-/* CARDS */
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .section-title{font-size:16px;font-weight:600}
 .btn-add{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer}
 .btn-add:hover{background:#D4611A}
 
-/* TABLE */
 .table-card{background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:24px}
 table{width:100%;border-collapse:collapse}
 thead th{padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--tx3);background:var(--s2);border-bottom:1px solid var(--bd);text-align:left}
@@ -51,7 +48,6 @@ tbody td{padding:10px 14px;font-size:13px;border-bottom:1px solid var(--bd);vert
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--s2)}
 
-/* TOGGLE */
 .toggle{position:relative;width:36px;height:20px;display:inline-block}
 .toggle input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;inset:0;background:#CCC;border-radius:20px;cursor:pointer;transition:.2s}
@@ -59,17 +55,14 @@ tbody tr:hover td{background:var(--s2)}
 .toggle input:checked+.toggle-slider{background:var(--gn)}
 .toggle input:checked+.toggle-slider::before{transform:translateX(16px)}
 
-/* ICON CHIP */
 .proc-chip-preview{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:500}
 .cat-badge{display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:var(--s2);color:var(--tx2)}
 
-/* ICON PICKER */
 .icon-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
 .icon-opt{width:40px;height:40px;border-radius:var(--r);border:1.5px solid var(--bd);display:flex;align-items:center;justify-content:center;font-size:18px;cursor:pointer;transition:all .15s}
 .icon-opt:hover{border-color:var(--or);color:var(--or)}
 .icon-opt.selected{border-color:var(--or);background:var(--orl);color:var(--or)}
 
-/* MODAL */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:200;opacity:0;pointer-events:none;transition:opacity .2s}
 .overlay.open{opacity:1;pointer-events:all}
 .modal{background:var(--surface);border-radius:var(--rl);border:1px solid var(--bd);padding:28px;width:480px;max-width:95vw;transform:translateY(12px);transition:transform .2s;max-height:90vh;overflow-y:auto}
@@ -96,7 +89,6 @@ tbody tr:hover td{background:var(--s2)}
 .toast{position:fixed;bottom:24px;right:24px;background:#1A1A18;color:#fff;padding:10px 16px;border-radius:var(--r);font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;z-index:600;opacity:0;transform:translateY(8px);transition:opacity .2s,transform .2s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}.toast.error{background:#C0392B}
 
-/* PRECIO CON MARGEN */
 .margen-preview{background:var(--gnl);border:1px solid #AADDA0;border-radius:var(--r);padding:10px 14px;font-size:13px;color:var(--gnt);display:none}
 
 @media(max-width:700px){.main{padding:14px}.fg{grid-template-columns:1fr}}
@@ -121,6 +113,7 @@ tbody tr:hover td{background:var(--s2)}
   <div class="tabs">
     <div class="tab active" onclick="setTab('materiales',this)"><i class="ti ti-stack-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Materiales</div>
     <div class="tab" onclick="setTab('procesos',this)"><i class="ti ti-settings-2" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Procesos</div>
+    <div class="tab" onclick="setTab('maquinas',this)"><i class="ti ti-cpu" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Máquinas</div>
     <div class="tab" id="tab-usuarios" onclick="setTab('usuarios',this)"><i class="ti ti-users" style="margin-right:6px;font-size:14px;vertical-align:-2px"></i>Usuarios</div>
   </div>
 
@@ -131,14 +124,12 @@ tbody tr:hover td{background:var(--s2)}
         <div class="section-title">Materiales e insumos</div>
         <div style="font-size:12px;color:var(--tx3);margin-top:2px">Aparecen en el selector del formulario de nueva tarea</div>
       </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <div style="display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:6px 10px">
-          <span style="font-size:11px;color:var(--tx3);font-weight:600">USD =</span>
-          <input type="number" id="cotizacion-input" value="1000" style="width:80px;border:none;background:transparent;font-size:13px;font-weight:600;outline:none" onchange="guardarCotizacion()">
-          <span style="font-size:11px;color:var(--tx3)">ARS</span>
-        </div>
-        <button class="btn-add" onclick="openMaterial()"><i class="ti ti-plus"></i> Agregar material</button>
-      </div>
+      <button class="btn-add" onclick="openMaterial()"><i class="ti ti-plus"></i> Agregar material</button>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--r);padding:6px 10px;width:fit-content;margin-bottom:16px">
+      <span style="font-size:11px;color:var(--tx3);font-weight:600">USD =</span>
+      <input type="number" id="cotizacion-input" value="1000" style="width:80px;border:none;background:transparent;font-size:13px;font-weight:600;outline:none" onchange="guardarCotizacion()">
+      <span style="font-size:11px;color:var(--tx3)">ARS</span>
     </div>
     <div class="table-card">
       <table>
@@ -147,10 +138,12 @@ tbody tr:hover td{background:var(--s2)}
             <th>Nombre</th>
             <th>Espesor</th>
             <th>Categoría</th>
+            <th>Dimensiones</th>
             <th>P. Costo</th>
             <th>P. Lista</th>
             <th>USD</th>
             <th>Margen</th>
+            <th>$/cm²</th>
             <th style="width:60px;text-align:center">Activo</th>
             <th style="width:60px"></th>
           </tr>
@@ -181,6 +174,38 @@ tbody tr:hover td{background:var(--s2)}
           </tr>
         </thead>
         <tbody id="tbody-proc"><tr><td colspan="5" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- MÁQUINAS -->
+  <div class="section" id="sec-maquinas">
+    <div class="section-header">
+      <div>
+        <div class="section-title">Máquinas</div>
+        <div style="font-size:12px;color:var(--tx3);margin-top:2px">Configuración de equipos para el cotizador automático</div>
+      </div>
+      <button class="btn-add" onclick="openMaquina()"><i class="ti ti-plus"></i> Agregar máquina</button>
+    </div>
+    <div class="table-card">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Consumible</th>
+            <th>Vida útil</th>
+            <th>kWh</th>
+            <th>$/kWh</th>
+            <th>Costo fijo/mes</th>
+            <th>Hs/mes</th>
+            <th>Vel. mm/min</th>
+            <th>Paso mm</th>
+            <th style="width:60px;text-align:center">Activo</th>
+            <th style="width:60px"></th>
+          </tr>
+        </thead>
+        <tbody id="tbody-maq"><tr><td colspan="12" class="empty"><i class="ti ti-loader"></i> Cargando...</td></tr></tbody>
       </table>
     </div>
   </div>
@@ -223,17 +248,23 @@ tbody tr:hover td{background:var(--s2)}
       <div><label>Espesor</label><input type="text" id="mat-espesor" placeholder="4mm, 1.5mm..."></div>
       <div>
         <label>Categoría</label>
-        <div style="display:flex;gap:6px">
-          <select id="mat-categoria" style="flex:1"></select>
-          <button type="button" class="btn-icon" onclick="agregarCategoriaRapida()" title="Nueva categoría"><i class="ti ti-plus"></i></button>
-        </div>
+        <select id="mat-categoria">
+          <option value="Metal">Metal</option>
+          <option value="Acrilico">Acrilico</option>
+          <option value="Madera">Madera</option>
+          <option value="Plastico">Plastico</option>
+          <option value="Piedra">Piedra</option>
+          <option value="Insumo">Insumo</option>
+          <option value="Otro">Otro</option>
+        </select>
       </div>
-      <div><label>Unidad</label><input type="text" id="mat-unidad" placeholder="mm, cm, m2..." value="mm"></div>
-      <div><label>Precio Costo (ARS)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
-      <div><label>Precio Lista (ARS)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
+      <div><label>Ancho placa (cm)</label><input type="number" id="mat-ancho" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Alto placa (cm)</label><input type="number" id="mat-alto" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Precio Costo (placa, ARS)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
+      <div><label>Precio Lista (placa, ARS)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
       <div><label>Precio Costo (USD)</label><input type="number" id="mat-costo-usd" placeholder="0" oninput="syncArsFromUsd()"></div>
       <div><label>Precio Lista (USD)</label><input type="number" id="mat-lista-usd" placeholder="0" oninput="syncArsFromUsd()"></div>
-      <div class="ff" style="font-size:11px;color:var(--tx3)"><i class="ti ti-info-circle" style="margin-right:4px;vertical-align:-1px"></i>Cotización actual: $<span id="cot-display">1000</span> ARS/USD — los campos se sincronizan automáticamente</div>
+      <div class="ff" style="font-size:11px;color:var(--tx3)"><i class="ti ti-info-circle" style="margin-right:4px;vertical-align:-1px"></i>Cotización actual: $<span id="cot-display">1000</span> ARS/USD</div>
       <div class="ff margen-preview" id="margen-preview"></div>
     </div>
     <div class="modal-footer">
@@ -290,7 +321,6 @@ tbody tr:hover td{background:var(--s2)}
   </div>
 </div>
 
-
 <!-- MODAL USUARIO -->
 <div class="overlay" id="overlay-user" onclick="if(event.target===this)closeModal('user')">
   <div class="modal">
@@ -327,13 +357,52 @@ tbody tr:hover td{background:var(--s2)}
     </div>
   </div>
 </div>
+
+<!-- MODAL MÁQUINA -->
+<div class="overlay" id="overlay-maq" onclick="if(event.target===this)closeModal('maq')">
+  <div class="modal" style="width:540px">
+    <div class="modal-header">
+      <div class="modal-title" id="maq-modal-title">Nueva Máquina</div>
+      <button class="modal-close" onclick="closeModal('maq')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="fg">
+      <div class="ff"><label>Nombre</label><input type="text" id="maq-nombre" placeholder="CO2 grande, Fibra 30W..."></div>
+      <div>
+        <label>Tipo</label>
+        <select id="maq-tipo">
+          <option value="CO2">CO2</option>
+          <option value="Fibra">Fibra</option>
+          <option value="Diodo">Diodo LED</option>
+          <option value="CNC">CNC Router</option>
+          <option value="Plasma">Plasma</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div><label>Costo consumible (ARS)</label><input type="number" id="maq-consumible" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Vida útil consumible (hs)</label><input type="number" id="maq-vida" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Consumo eléctrico (kWh)</label><input type="number" id="maq-kwh" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Precio kWh (ARS)</label><input type="number" id="maq-precio-kwh" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Costo fijo mensual (ARS)</label><input type="number" id="maq-overhead" placeholder="0" oninput="calcMaquina()"></div>
+      <div><label>Promedio horas trabajo/mes</label><input type="number" id="maq-horas-mes" placeholder="160" value="160" oninput="calcMaquina()"></div>
+      <div><label>Velocidad promedio (mm/min)</label><input type="number" id="maq-velocidad" placeholder="3000" oninput="calcMaquina()"></div>
+      <div><label>Paso promedio (mm)</label><input type="number" id="maq-paso" placeholder="0.1" step="0.01" oninput="calcMaquina()"></div>
+      <div class="ff" id="maq-preview" style="display:none;background:var(--s2);border-radius:var(--r);padding:12px;font-size:12px;color:var(--tx2);line-height:1.8"></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-delete" id="maq-btn-delete" style="display:none" onclick="deleteMaquina()"><i class="ti ti-trash"></i> Eliminar</button>
+      <div class="modal-footer-right">
+        <button class="btn-cancel" onclick="closeModal('maq')">Cancelar</button>
+        <button class="btn-save" onclick="guardarMaquina()"><i class="ti ti-check"></i> Guardar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"><i class="ti ti-circle-check"></i><span id="toast-msg"></span></div>
 
 <script>
-// sb viene de auth.js
-
-let materiales=[], procesos=[], categorias=[], cotizacionUSD=1000;
-let editMatId=null, editProcId=null;
+let materiales=[], procesos=[], maquinas=[], cotizacionUSD=1000;
+let editMatId=null, editProcId=null, editMaqId=null;
 
 const CAT_COLORS={
   'Metal':'#E6EEF8','Acrilico':'#EAF3DE','Madera':'#FFF0DC',
@@ -346,128 +415,115 @@ const CAT_TC={
 
 function fmt(n){if(!n||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 
-// ── TABS ──────────────────────────────────────────────
 function setTab(name,btn){
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('sec-'+name).classList.add('active');
   if(name==='usuarios') cargarUsuarios();
+  if(name==='maquinas') renderMaquinas();
 }
 
-// ── CARGAR ────────────────────────────────────────────
 async function cargarTodo(){
-  const [{data:m},{data:p},{data:cat},{data:cfg}]=await Promise.all([
+  const [{data:m},{data:p},{data:mq},{data:cfg}]=await Promise.all([
     sb.from('materiales').select('*').order('categoria').order('nombre').order('espesor'),
     sb.from('procesos').select('*').order('orden'),
-    sb.from('categorias_material').select('*').order('orden').order('nombre'),
+    sb.from('maquinas').select('*').order('nombre'),
     sb.from('config').select('*').eq('id',1).single()
   ]);
-  materiales=m||[]; procesos=p||[]; categorias=cat||[];
-  cotizacionUSD=cfg?.cotizacion_usd||1000;
-  renderMateriales(); renderProcesos();
+  materiales=m||[]; procesos=p||[]; maquinas=mq||[];
+  cotizacionUSD=(cfg&&cfg.cotizacion_usd)||1000;
   const cotInput=document.getElementById('cotizacion-input');
   if(cotInput) cotInput.value=cotizacionUSD;
+  renderMateriales(); renderProcesos(); renderMaquinas();
 }
 
-// ── MATERIALES ────────────────────────────────────────
 function renderMateriales(){
   const tbody=document.getElementById('tbody-mat');
-  if(!materiales.length){tbody.innerHTML='<tr><td colspan="9" class="empty">No hay materiales aún</td></tr>';return;}
+  if(!materiales.length){tbody.innerHTML='<tr><td colspan="10" class="empty">No hay materiales aún</td></tr>';return;}
   tbody.innerHTML=materiales.map(m=>{
     const margen=m.precio_costo>0&&m.precio_lista>0
       ?Math.round((m.precio_lista-m.precio_costo)/m.precio_costo*100)+'%' : '—';
     const cc=CAT_COLORS[m.categoria]||CAT_COLORS['Otro'];
     const ct=CAT_TC[m.categoria]||CAT_TC['Otro'];
+    const area=(m.ancho_cm||0)*(m.alto_cm||0);
+    const precioCm2=area>0&&m.precio_costo>0?'$'+(m.precio_costo/area).toFixed(4)+'/cm²':'—';
+    const dims=(m.ancho_cm&&m.alto_cm)?(m.ancho_cm+'×'+m.alto_cm+'cm'):'—';
     const usdLabel=m.precio_lista_usd>0?'US$'+m.precio_lista_usd.toLocaleString('es-AR'):'—';
-    return `<tr>
-      <td style="font-weight:500">${m.nombre}</td>
-      <td style="color:var(--tx2)">${m.espesor||'—'}</td>
-      <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${cc};color:${ct}">${m.categoria||'—'}</span></td>
-      <td>${fmt(m.precio_costo)}</td>
-      <td>${fmt(m.precio_lista)}</td>
-      <td style="color:var(--tx2);font-size:12px">${usdLabel}</td>
-      <td style="color:var(--gnt);font-weight:500">${margen}</td>
-      <td style="text-align:center">
-        <label class="toggle"><input type="checkbox" ${m.activo?'checked':''} onchange="toggleMaterial('${m.id}',this.checked)"><span class="toggle-slider"></span></label>
-      </td>
-      <td style="text-align:center">
-        <button class="btn-icon" onclick="openMaterial('${m.id}')"><i class="ti ti-pencil"></i></button>
-      </td>
-    </tr>`;
+    return '<tr>'+
+      '<td style="font-weight:500">'+m.nombre+'</td>'+
+      '<td style="color:var(--tx2)">'+(m.espesor||'—')+'</td>'+
+      '<td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:'+cc+';color:'+ct+'">'+(m.categoria||'—')+'</span></td>'+
+      '<td style="color:var(--tx2);font-size:12px">'+dims+'</td>'+
+      '<td>'+fmt(m.precio_costo)+'</td>'+
+      '<td>'+fmt(m.precio_lista)+'</td>'+
+      '<td style="color:var(--tx2);font-size:12px">'+usdLabel+'</td>'+
+      '<td style="color:var(--gnt);font-weight:500">'+margen+'</td>'+
+      '<td style="color:var(--tx2);font-size:11px">'+precioCm2+'</td>'+
+      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaterial(\\''+m.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+      '<td style="text-align:center"><button class="btn-icon" onclick="openMaterial(\\''+m.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+    '</tr>';
   }).join('');
 }
 
-function populateCategoriaSelect(selected){
-  const sel=document.getElementById('mat-categoria');
-  sel.innerHTML=categorias.map(c=>`<option value="${c.nombre}">${c.nombre}</option>`).join('');
-  if(selected) sel.value=selected;
-}
 function openMaterial(id){
   editMatId=id||null;
   const m=id?materiales.find(x=>x.id===id):null;
   document.getElementById('mat-modal-title').textContent=m?'Editar Material':'Nuevo Material';
-  document.getElementById('mat-nombre').value=m?.nombre||'';
-  document.getElementById('mat-espesor').value=m?.espesor||'';
-  populateCategoriaSelect(m?.categoria||categorias[0]?.nombre);
-  document.getElementById('mat-unidad').value=m?.unidad||'mm';
-  document.getElementById('mat-costo').value=m?.precio_costo||'';
-  document.getElementById('mat-lista').value=m?.precio_lista||'';
-  document.getElementById('mat-costo-usd').value=m?.precio_costo_usd||'';
-  document.getElementById('mat-lista-usd').value=m?.precio_lista_usd||'';
+  document.getElementById('mat-nombre').value=m?m.nombre||'':'';
+  document.getElementById('mat-espesor').value=m?m.espesor||'':'';
+  document.getElementById('mat-categoria').value=m?m.categoria||'Metal':'Metal';
+  document.getElementById('mat-ancho').value=m?m.ancho_cm||'':'';
+  document.getElementById('mat-alto').value=m?m.alto_cm||'':'';
+  document.getElementById('mat-costo').value=m?m.precio_costo||'':'';
+  document.getElementById('mat-lista').value=m?m.precio_lista||'':'';
+  document.getElementById('mat-costo-usd').value=m?m.precio_costo_usd||'':'';
+  document.getElementById('mat-lista-usd').value=m?m.precio_lista_usd||'':'';
   document.getElementById('cot-display').textContent=cotizacionUSD.toLocaleString('es-AR');
   document.getElementById('mat-btn-delete').style.display=m?'flex':'none';
   document.getElementById('margen-preview').style.display='none';
   document.getElementById('overlay-mat').classList.add('open');
-  setTimeout(()=>document.getElementById('mat-nombre').focus(),100);
+  setTimeout(function(){document.getElementById('mat-nombre').focus();},100);
 }
 
-// Sincronización ARS <-> USD
-let syncing=false;
+let syncingPrice=false;
 function syncUsdFromArs(){
-  if(syncing)return; syncing=true;
+  if(syncingPrice)return; syncingPrice=true;
   const costoArs=parseFloat(document.getElementById('mat-costo').value)||0;
   const listaArs=parseFloat(document.getElementById('mat-lista').value)||0;
   if(costoArs>0) document.getElementById('mat-costo-usd').value=(costoArs/cotizacionUSD).toFixed(2);
   if(listaArs>0) document.getElementById('mat-lista-usd').value=(listaArs/cotizacionUSD).toFixed(2);
-  syncing=false;
+  syncingPrice=false;
 }
 function syncArsFromUsd(){
-  if(syncing)return; syncing=true;
+  if(syncingPrice)return; syncingPrice=true;
   const costoUsd=parseFloat(document.getElementById('mat-costo-usd').value)||0;
   const listaUsd=parseFloat(document.getElementById('mat-lista-usd').value)||0;
   if(costoUsd>0) document.getElementById('mat-costo').value=Math.round(costoUsd*cotizacionUSD);
   if(listaUsd>0) document.getElementById('mat-lista').value=Math.round(listaUsd*cotizacionUSD);
-  syncing=false;
+  syncingPrice=false;
   calcMargen();
 }
-
-async function agregarCategoriaRapida(){
-  const nombre=prompt('Nombre de la nueva categoría:');
-  if(!nombre||!nombre.trim())return;
-  const {data,error}=await sb.from('categorias_material').insert({nombre:nombre.trim(),orden:categorias.length}).select().single();
-  if(error){showToast('Error: '+error.message,true);return;}
-  categorias.push(data);
-  populateCategoriaSelect(data.nombre);
-  showToast('Categoría agregada');
-}
-
 async function guardarCotizacion(){
   const val=parseFloat(document.getElementById('cotizacion-input').value)||1000;
   cotizacionUSD=val;
-  const {error}=await sb.from('config').update({cotizacion_usd:val,updated_at:new Date().toISOString()}).eq('id',1);
-  if(error){showToast('Error: '+error.message,true);return;}
+  const r=await sb.from('config').update({cotizacion_usd:val,updated_at:new Date().toISOString()}).eq('id',1);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
   showToast('Cotización actualizada: $'+val.toLocaleString('es-AR'));
 }
 
 function calcMargen(){
   const costo=parseFloat(document.getElementById('mat-costo').value)||0;
   const lista=parseFloat(document.getElementById('mat-lista').value)||0;
+  const ancho=parseFloat(document.getElementById('mat-ancho').value)||0;
+  const alto=parseFloat(document.getElementById('mat-alto').value)||0;
   const el=document.getElementById('margen-preview');
   if(costo>0&&lista>0){
     const m=Math.round((lista-costo)/costo*100);
+    const area=ancho*alto;
+    const cm2txt=area>0?(' · <strong>$'+(costo/area).toFixed(4)+'/cm²</strong>'):'';
     el.style.display='block';
-    el.innerHTML=`<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>${m}%</strong> — ganancia ${fmt(lista-costo)} por unidad`;
+    el.innerHTML='<i class="ti ti-trending-up" style="margin-right:6px;vertical-align:-2px"></i>Margen: <strong>'+m+'%</strong> — ganancia '+fmt(lista-costo)+' por placa'+cm2txt;
     el.style.color=m>0?'var(--gnt)':'#C0392B';
     el.style.background=m>0?'var(--gnl)':'#FFF0F0';
     el.style.borderColor=m>0?'#AADDA0':'#F5C0C0';
@@ -478,10 +534,11 @@ async function guardarMaterial(){
   const nombre=document.getElementById('mat-nombre').value.trim();
   if(!nombre){showToast('Ingresá un nombre',true);return;}
   const payload={
-    nombre,
+    nombre:nombre,
     espesor:document.getElementById('mat-espesor').value.trim(),
     categoria:document.getElementById('mat-categoria').value,
-    unidad:document.getElementById('mat-unidad').value.trim(),
+    ancho_cm:parseFloat(document.getElementById('mat-ancho').value)||0,
+    alto_cm:parseFloat(document.getElementById('mat-alto').value)||0,
     precio_costo:parseFloat(document.getElementById('mat-costo').value)||0,
     precio_lista:parseFloat(document.getElementById('mat-lista').value)||0,
     precio_costo_usd:parseFloat(document.getElementById('mat-costo-usd').value)||0,
@@ -490,153 +547,242 @@ async function guardarMaterial(){
   };
   let error;
   if(editMatId){
-    ({error}=await sb.from('materiales').update(payload).eq('id',editMatId));
+    var r1=await sb.from('materiales').update(payload).eq('id',editMatId);
+    error=r1.error;
   } else {
-    ({error}=await sb.from('materiales').insert(payload));
+    var r2=await sb.from('materiales').insert(payload);
+    error=r2.error;
   }
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('mat');
-  await initAuth('editor').then(user=>{
-  if(!user)return;
-  renderUserChip();
-  applyRoleUI();
-  cargarTodo();
-  // Mostrar tab usuarios solo a propietario
-  if(!can('usuarios')){
-    const t=document.getElementById('tab-usuarios');
-    if(t)t.style.display='none';
-  }
-});
+  await cargarTodo();
   showToast(editMatId?'Material actualizado':'Material creado');
 }
 
 async function toggleMaterial(id,val){
-  const {error}=await sb.from('materiales').update({activo:val}).eq('id',id);
-  if(error){showToast('Error: '+error.message,true);return;}
+  const r=await sb.from('materiales').update({activo:val}).eq('id',id);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
   const m=materiales.find(x=>x.id===id);
   if(m) m.activo=val;
 }
 
 async function deleteMaterial(){
   if(!confirm('¿Eliminar este material?'))return;
-  const {error}=await sb.from('materiales').delete().eq('id',editMatId);
-  if(error){showToast('Error: '+error.message,true);return;}
+  const r=await sb.from('materiales').delete().eq('id',editMatId);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
   closeModal('mat');
-  await initAuth('editor').then(user=>{
-  if(!user)return;
-  renderUserChip();
-  applyRoleUI();
-  cargarTodo();
-  // Mostrar tab usuarios solo a propietario
-  if(!can('usuarios')){
-    const t=document.getElementById('tab-usuarios');
-    if(t)t.style.display='none';
-  }
-});
+  await cargarTodo();
   showToast('Material eliminado');
 }
 
-// ── PROCESOS ──────────────────────────────────────────
 function renderProcesos(){
   const tbody=document.getElementById('tbody-proc');
   if(!procesos.length){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay procesos aún</td></tr>';return;}
-  tbody.innerHTML=procesos.map(p=>`<tr>
-    <td>
-      <span class="proc-chip-preview" style="background:#F3F2EF;color:#5F5E5A">
-        <i class="ti ${p.icono||'ti-settings'}" style="font-size:13px"></i>${p.nombre}
-      </span>
-    </td>
-    <td style="color:var(--tx2)"><i class="ti ${p.icono||'ti-settings'}" style="font-size:16px"></i> <span style="font-size:11px;color:var(--tx3)">${p.icono||'—'}</span></td>
-    <td style="text-align:center;color:var(--tx2)">${p.orden}</td>
-    <td style="text-align:center">
-      <label class="toggle"><input type="checkbox" ${p.activo?'checked':''} onchange="toggleProceso('${p.id}',this.checked)"><span class="toggle-slider"></span></label>
-    </td>
-    <td style="text-align:center">
-      <button class="btn-icon" onclick="openProceso('${p.id}')"><i class="ti ti-pencil"></i></button>
-    </td>
-  </tr>`).join('');
+  tbody.innerHTML=procesos.map(function(p){
+    return '<tr>'+
+    '<td><span class="proc-chip-preview" style="background:#F3F2EF;color:#5F5E5A"><i class="ti '+(p.icono||'ti-settings')+'" style="font-size:13px"></i>'+p.nombre+'</span></td>'+
+    '<td style="color:var(--tx2)"><i class="ti '+(p.icono||'ti-settings')+'" style="font-size:16px"></i> <span style="font-size:11px;color:var(--tx3)">'+(p.icono||'—')+'</span></td>'+
+    '<td style="text-align:center;color:var(--tx2)">'+p.orden+'</td>'+
+    '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(p.activo?'checked':'')+' onchange="toggleProceso(\\''+p.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+    '<td style="text-align:center"><button class="btn-icon" onclick="openProceso(\\''+p.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+    '</tr>';
+  }).join('');
 }
 
 function openProceso(id){
   editProcId=id||null;
   const p=id?procesos.find(x=>x.id===id):null;
   document.getElementById('proc-modal-title').textContent=p?'Editar Proceso':'Nuevo Proceso';
-  document.getElementById('proc-nombre').value=p?.nombre||'';
-  document.getElementById('proc-orden').value=p?.orden??procesos.length;
-  // select icon
-  const iconSel=p?.icono||'ti-printer';
-  document.querySelectorAll('.icon-opt').forEach(el=>{
+  document.getElementById('proc-nombre').value=p?p.nombre||'':'';
+  document.getElementById('proc-orden').value=p?(p.orden!=null?p.orden:procesos.length):procesos.length;
+  const iconSel=p?p.icono||'ti-printer':'ti-printer';
+  document.querySelectorAll('.icon-opt').forEach(function(el){
     el.classList.toggle('selected',el.dataset.icon===iconSel);
   });
   document.getElementById('proc-btn-delete').style.display=p?'flex':'none';
   document.getElementById('overlay-proc').classList.add('open');
-  setTimeout(()=>document.getElementById('proc-nombre').focus(),100);
+  setTimeout(function(){document.getElementById('proc-nombre').focus();},100);
 }
 
 function selIcon(el){
-  document.querySelectorAll('.icon-opt').forEach(e=>e.classList.remove('selected'));
+  document.querySelectorAll('.icon-opt').forEach(function(e){e.classList.remove('selected');});
   el.classList.add('selected');
 }
 
 async function guardarProceso(){
   const nombre=document.getElementById('proc-nombre').value.trim();
   if(!nombre){showToast('Ingresá un nombre',true);return;}
-  const icono=document.querySelector('.icon-opt.selected')?.dataset.icon||'ti-settings';
+  const selEl=document.querySelector('.icon-opt.selected');
+  const icono=selEl?selEl.dataset.icon:'ti-settings';
   const payload={
-    nombre,
-    icono,
+    nombre:nombre,
+    icono:icono,
     orden:parseInt(document.getElementById('proc-orden').value)||0,
     activo:true
   };
   let error;
   if(editProcId){
-    ({error}=await sb.from('procesos').update(payload).eq('id',editProcId));
+    var r1=await sb.from('procesos').update(payload).eq('id',editProcId);
+    error=r1.error;
   } else {
-    ({error}=await sb.from('procesos').insert(payload));
+    var r2=await sb.from('procesos').insert(payload);
+    error=r2.error;
   }
   if(error){showToast('Error: '+error.message,true);return;}
   closeModal('proc');
-  await initAuth('editor').then(user=>{
-  if(!user)return;
-  renderUserChip();
-  applyRoleUI();
-  cargarTodo();
-  // Mostrar tab usuarios solo a propietario
-  if(!can('usuarios')){
-    const t=document.getElementById('tab-usuarios');
-    if(t)t.style.display='none';
-  }
-});
+  await cargarTodo();
   showToast(editProcId?'Proceso actualizado':'Proceso creado');
 }
 
 async function toggleProceso(id,val){
-  const {error}=await sb.from('procesos').update({activo:val}).eq('id',id);
-  if(error){showToast('Error: '+error.message,true);return;}
+  const r=await sb.from('procesos').update({activo:val}).eq('id',id);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
   const p=procesos.find(x=>x.id===id);
   if(p) p.activo=val;
 }
 
 async function deleteProceso(){
   if(!confirm('¿Eliminar este proceso?'))return;
-  const {error}=await sb.from('procesos').delete().eq('id',editProcId);
-  if(error){showToast('Error: '+error.message,true);return;}
+  const r=await sb.from('procesos').delete().eq('id',editProcId);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
   closeModal('proc');
-  await initAuth('editor').then(user=>{
-  if(!user)return;
-  renderUserChip();
-  applyRoleUI();
-  cargarTodo();
-  // Mostrar tab usuarios solo a propietario
-  if(!can('usuarios')){
-    const t=document.getElementById('tab-usuarios');
-    if(t)t.style.display='none';
-  }
-});
+  await cargarTodo();
   showToast('Proceso eliminado');
 }
 
-// ── HELPERS ───────────────────────────────────────────
+const TIPO_COLORS={
+  'CO2':{bg:'#FEF6EE',color:'#7A3D00'},
+  'Fibra':{bg:'#EEF3FB',color:'#0C3D8A'},
+  'Diodo':{bg:'#F0F7EA',color:'#2D5A1B'},
+  'CNC':{bg:'#F3F2EF',color:'#3C3489'},
+  'Plasma':{bg:'#FBEAF0',color:'#72243E'},
+  'Otro':{bg:'#F3F2EF',color:'#5F5E5A'}
+};
+
+function renderMaquinas(){
+  const tbody=document.getElementById('tbody-maq');
+  if(!tbody)return;
+  if(!maquinas.length){tbody.innerHTML='<tr><td colspan="12" class="empty">No hay máquinas aún</td></tr>';return;}
+  tbody.innerHTML=maquinas.map(function(m){
+    const tc=TIPO_COLORS[m.tipo]||TIPO_COLORS['Otro'];
+    return '<tr>'+
+      '<td style="font-weight:500">'+m.nombre+'</td>'+
+      '<td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:'+tc.bg+';color:'+tc.color+'">'+(m.tipo||'—')+'</span></td>'+
+      '<td>'+fmt(m.costo_consumible)+'</td>'+
+      '<td style="color:var(--tx2)">'+(m.vida_util_horas||0)+' hs</td>'+
+      '<td style="color:var(--tx2)">'+(m.consumo_kwh||0)+'</td>'+
+      '<td style="color:var(--tx2)">'+fmt(m.precio_kwh)+'</td>'+
+      '<td>'+fmt(m.overhead_mensual)+'</td>'+
+      '<td style="color:var(--tx2)">'+(m.horas_mensuales||0)+'</td>'+
+      '<td style="color:var(--tx2)">'+(m.velocidad_mm_min||'—')+'</td>'+
+      '<td style="color:var(--tx2)">'+(m.paso_mm||'—')+'</td>'+
+      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaquina(\\''+m.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+      '<td style="text-align:center"><button class="btn-icon" onclick="openMaquina(\\''+m.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+    '</tr>';
+  }).join('');
+}
+
+function calcMaquina(){
+  const consumible=parseFloat(document.getElementById('maq-consumible').value)||0;
+  const vida=parseFloat(document.getElementById('maq-vida').value)||0;
+  const kwh=parseFloat(document.getElementById('maq-kwh').value)||0;
+  const precioKwh=parseFloat(document.getElementById('maq-precio-kwh').value)||0;
+  const overhead=parseFloat(document.getElementById('maq-overhead').value)||0;
+  const horasMes=parseFloat(document.getElementById('maq-horas-mes').value)||160;
+  const velocidad=parseFloat(document.getElementById('maq-velocidad').value)||0;
+  const paso=parseFloat(document.getElementById('maq-paso').value)||0;
+  const el=document.getElementById('maq-preview');
+  if(consumible>0||kwh>0||overhead>0){
+    const costoCons=vida>0?consumible/vida:0;
+    const costoElec=kwh*precioKwh;
+    const costoOver=horasMes>0?overhead/horasMes:0;
+    const totalHora=costoCons+costoElec+costoOver;
+    const minCm2=(velocidad>0&&paso>0)?100/(velocidad*paso):0;
+    const costoCm2=minCm2>0?totalHora/60*minCm2:0;
+    el.style.display='block';
+    let extra='';
+    if(minCm2>0){
+      extra='<br><span style="color:var(--tx3);font-size:11px">Tarifa calculada: '+minCm2.toFixed(4)+' min/cm² · Costo máquina: '+fmt(costoCm2)+'/cm²</span>';
+    }
+    el.innerHTML='<strong style="color:var(--tx);display:block;margin-bottom:4px">Costo por hora de trabajo:</strong>'+
+      'Consumible: '+fmt(costoCons)+'/hs &nbsp;·&nbsp; Electricidad: '+fmt(costoElec)+'/hs &nbsp;·&nbsp; Costo fijo: '+fmt(costoOver)+'/hs<br>'+
+      '<strong style="color:var(--or)">Total máquina: '+fmt(totalHora)+'/hs</strong>'+extra;
+  } else { el.style.display='none'; }
+}
+
+function openMaquina(id){
+  editMaqId=id||null;
+  const m=id?maquinas.find(x=>x.id===id):null;
+  document.getElementById('maq-modal-title').textContent=m?'Editar Máquina':'Nueva Máquina';
+  document.getElementById('maq-nombre').value=m?m.nombre||'':'';
+  document.getElementById('maq-tipo').value=m?m.tipo||'CO2':'CO2';
+  document.getElementById('maq-consumible').value=m?m.costo_consumible||'':'';
+  document.getElementById('maq-vida').value=m?m.vida_util_horas||'':'';
+  document.getElementById('maq-kwh').value=m?m.consumo_kwh||'':'';
+  document.getElementById('maq-precio-kwh').value=m?m.precio_kwh||'':'';
+  document.getElementById('maq-overhead').value=m?m.overhead_mensual||'':'';
+  document.getElementById('maq-horas-mes').value=m?m.horas_mensuales||160:160;
+  document.getElementById('maq-velocidad').value=m?m.velocidad_mm_min||'':'';
+  document.getElementById('maq-paso').value=m?m.paso_mm||'':'';
+  document.getElementById('maq-btn-delete').style.display=m?'flex':'none';
+  document.getElementById('maq-preview').style.display='none';
+  document.getElementById('overlay-maq').classList.add('open');
+  setTimeout(function(){document.getElementById('maq-nombre').focus();},100);
+}
+
+async function guardarMaquina(){
+  const nombre=document.getElementById('maq-nombre').value.trim();
+  if(!nombre){showToast('Ingresá un nombre',true);return;}
+  const v=parseFloat(document.getElementById('maq-velocidad').value)||0;
+  const p=parseFloat(document.getElementById('maq-paso').value)||0;
+  const payload={
+    nombre:nombre,
+    tipo:document.getElementById('maq-tipo').value,
+    costo_consumible:parseFloat(document.getElementById('maq-consumible').value)||0,
+    vida_util_horas:parseFloat(document.getElementById('maq-vida').value)||0,
+    consumo_kwh:parseFloat(document.getElementById('maq-kwh').value)||0,
+    precio_kwh:parseFloat(document.getElementById('maq-precio-kwh').value)||0,
+    overhead_mensual:parseFloat(document.getElementById('maq-overhead').value)||0,
+    horas_mensuales:parseFloat(document.getElementById('maq-horas-mes').value)||160,
+    velocidad_mm_min:v,
+    paso_mm:p,
+    tarifa_min_cm2:(v>0&&p>0)?100/(v*p):0,
+    activo:true
+  };
+  let error;
+  if(editMaqId){
+    var r1=await sb.from('maquinas').update(payload).eq('id',editMaqId);
+    error=r1.error;
+  } else {
+    var r2=await sb.from('maquinas').insert(payload);
+    error=r2.error;
+  }
+  if(error){showToast('Error: '+error.message,true);return;}
+  closeModal('maq');
+  const rd=await sb.from('maquinas').select('*').order('nombre');
+  maquinas=rd.data||[];
+  renderMaquinas();
+  showToast(editMaqId?'Máquina actualizada':'Máquina creada');
+}
+
+async function toggleMaquina(id,val){
+  const r=await sb.from('maquinas').update({activo:val}).eq('id',id);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
+  const m=maquinas.find(x=>x.id===id);
+  if(m) m.activo=val;
+}
+
+async function deleteMaquina(){
+  if(!confirm('¿Eliminar esta máquina?'))return;
+  const r=await sb.from('maquinas').delete().eq('id',editMaqId);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
+  closeModal('maq');
+  const rd=await sb.from('maquinas').select('*').order('nombre');
+  maquinas=rd.data||[];
+  renderMaquinas();
+  showToast('Máquina eliminada');
+}
+
 let usuarios=[], editUserId=null;
 
 const ROL_LABELS={propietario:'Propietario',administrador:'Administrador',operador:'Operador'};
@@ -647,10 +793,9 @@ const ROL_COLORS={
 };
 
 async function cargarUsuarios(){
-  const {data,error}=await sb.from('perfiles').select('*, auth_email:id').order('nombre');
-  // email comes from auth.users via SQL view — use stored email fallback
-  if(error){showToast('Error: '+error.message,true);return;}
-  usuarios=data||[];
+  const r=await sb.from('perfiles').select('*').order('nombre');
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
+  usuarios=r.data||[];
   renderUsuarios();
 }
 
@@ -658,19 +803,15 @@ function renderUsuarios(){
   const tbody=document.getElementById('tbody-users');
   if(!tbody)return;
   if(!usuarios.length){tbody.innerHTML='<tr><td colspan="5" class="empty">No hay usuarios</td></tr>';return;}
-  tbody.innerHTML=usuarios.map(u=>{
+  tbody.innerHTML=usuarios.map(function(u){
     const rc=ROL_COLORS[u.rol]||ROL_COLORS.operador;
-    return`<tr>
-      <td style="font-weight:500">${u.nombre}</td>
-      <td style="color:var(--tx2);font-size:12px">${u.email||'—'}</td>
-      <td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:${rc.bg};color:${rc.color}">${ROL_LABELS[u.rol]||u.rol}</span></td>
-      <td style="text-align:center">
-        <label class="toggle"><input type="checkbox" ${u.activo?'checked':''} onchange="toggleUsuario('${u.id}',this.checked)"><span class="toggle-slider"></span></label>
-      </td>
-      <td style="text-align:center">
-        <button class="btn-icon" onclick="openUsuario('${u.id}')"><i class="ti ti-pencil"></i></button>
-      </td>
-    </tr>`;
+    return '<tr>'+
+      '<td style="font-weight:500">'+u.nombre+'</td>'+
+      '<td style="color:var(--tx2);font-size:12px">'+(u.email||'—')+'</td>'+
+      '<td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:'+rc.bg+';color:'+rc.color+'">'+(ROL_LABELS[u.rol]||u.rol)+'</span></td>'+
+      '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(u.activo?'checked':'')+' onchange="toggleUsuario(\\''+u.id+'\\',this.checked)"><span class="toggle-slider"></span></label></td>'+
+      '<td style="text-align:center"><button class="btn-icon" onclick="openUsuario(\\''+u.id+'\\')"><i class="ti ti-pencil"></i></button></td>'+
+    '</tr>';
   }).join('');
 }
 
@@ -678,15 +819,15 @@ function openUsuario(id){
   editUserId=id||null;
   const u=id?usuarios.find(x=>x.id===id):null;
   document.getElementById('user-modal-title').textContent=u?'Editar Usuario':'Nuevo Usuario';
-  document.getElementById('user-nombre').value=u?.nombre||'';
-  document.getElementById('user-email').value=u?.email||'';
+  document.getElementById('user-nombre').value=u?u.nombre||'':'';
+  document.getElementById('user-email').value=u?u.email||'':'';
   document.getElementById('user-email').disabled=!!u;
   document.getElementById('user-pass').value='12345678';
   document.getElementById('user-pass-wrap').style.display=u?'none':'block';
-  document.getElementById('user-rol').value=u?.rol||'operador';
+  document.getElementById('user-rol').value=u?u.rol||'operador':'operador';
   document.getElementById('user-btn-delete').style.display=u?'flex':'none';
   document.getElementById('overlay-user').classList.add('open');
-  setTimeout(()=>document.getElementById('user-nombre').focus(),100);
+  setTimeout(function(){document.getElementById('user-nombre').focus();},100);
 }
 
 async function guardarUsuario(){
@@ -697,20 +838,18 @@ async function guardarUsuario(){
   const btn=document.getElementById('btn-save-user');btn.disabled=true;
 
   if(editUserId){
-    // Solo actualizar perfil
-    const {error}=await sb.from('perfiles').update({nombre,rol}).eq('id',editUserId);
+    const r=await sb.from('perfiles').update({nombre:nombre,rol:rol}).eq('id',editUserId);
     btn.disabled=false;
-    if(error){showToast('Error: '+error.message,true);return;}
+    if(r.error){showToast('Error: '+r.error.message,true);return;}
     closeModal('user');await cargarUsuarios();showToast('Usuario actualizado');
   } else {
-    // Crear cuenta en Auth + perfil
     const pass=document.getElementById('user-pass').value;
     if(pass.length<6){showToast('La contraseña debe tener al menos 6 caracteres',true);btn.disabled=false;return;}
-    const {data,error}=await sb.auth.signUp({email,password:pass});
+    const r=await sb.auth.signUp({email:email,password:pass});
     btn.disabled=false;
-    if(error){showToast('Error: '+error.message,true);return;}
-    if(data?.user){
-      await sb.from('perfiles').insert({id:data.user.id,nombre,email,rol,activo:true});
+    if(r.error){showToast('Error: '+r.error.message,true);return;}
+    if(r.data&&r.data.user){
+      await sb.from('perfiles').insert({id:r.data.user.id,nombre:nombre,email:email,rol:rol,activo:true});
     }
     closeModal('user');await cargarUsuarios();
     showToast('Usuario creado — compartí el email y contraseña con '+nombre);
@@ -718,16 +857,15 @@ async function guardarUsuario(){
 }
 
 async function toggleUsuario(id,val){
-  // No permitir desactivarse a uno mismo
-  if(id===currentUser?.id){showToast('No podés desactivar tu propia cuenta',true);await cargarUsuarios();return;}
+  if(currentUser&&id===currentUser.id){showToast('No podés desactivar tu propia cuenta',true);await cargarUsuarios();return;}
   await sb.from('perfiles').update({activo:val}).eq('id',id);
 }
 
 async function deleteUsuario(){
-  if(editUserId===currentUser?.id){showToast('No podés eliminar tu propia cuenta',true);return;}
+  if(currentUser&&editUserId===currentUser.id){showToast('No podés eliminar tu propia cuenta',true);return;}
   if(!confirm('¿Eliminar este usuario? Solo se elimina el perfil, no la cuenta de Auth.'))return;
-  const {error}=await sb.from('perfiles').delete().eq('id',editUserId);
-  if(error){showToast('Error: '+error.message,true);return;}
+  const r=await sb.from('perfiles').delete().eq('id',editUserId);
+  if(r.error){showToast('Error: '+r.error.message,true);return;}
   closeModal('user');await cargarUsuarios();showToast('Usuario eliminado');
 }
 
@@ -737,15 +875,14 @@ function showToast(msg,error){
   document.getElementById('toast-msg').textContent=msg;
   t.className='toast'+(error?' error':'');
   t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+  setTimeout(function(){t.classList.remove('show');},3000);
 }
 
-initAuth('editor').then(user=>{
+initAuth('editor').then(function(user){
   if(!user)return;
   renderUserChip();
   applyRoleUI();
   cargarTodo();
-  // Mostrar tab usuarios solo a propietario
   if(!can('usuarios')){
     const t=document.getElementById('tab-usuarios');
     if(t)t.style.display='none';
