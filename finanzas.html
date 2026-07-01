@@ -86,6 +86,42 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 .empty-state{text-align:center;padding:32px;color:var(--tx3);font-size:13px}
 .loading{text-align:center;padding:32px;color:var(--tx3)}
 
+/* TABS PRINCIPALES */
+.main-tabs{display:flex;gap:0;border-bottom:2px solid var(--bd);margin-bottom:24px}
+.main-tab{padding:10px 22px;font-size:14px;font-weight:500;color:var(--tx2);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:all .15s;background:none;border-top:none;border-left:none;border-right:none;font-family:'DM Sans',sans-serif}
+.main-tab:hover{color:var(--tx)}
+.main-tab.active{color:var(--or);border-bottom-color:var(--or)}
+.tab-section{display:none}.tab-section.active{display:block}
+
+/* EGRESOS */
+.egr-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.egr-nav button{width:32px;height:32px;border:1px solid var(--bd);border-radius:var(--r);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--tx2)}
+.egr-nav button:hover{background:var(--s2)}
+.egr-mes-label{font-size:17px;font-weight:600;min-width:160px;text-align:center;letter-spacing:-.3px}
+.egr-total-badge{background:var(--orl);border:1px solid #F5C89A;border-radius:var(--r);padding:6px 14px;font-size:13px;font-weight:600;color:var(--ort);margin-left:auto}
+
+.egr-cat{background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);overflow:hidden;margin-bottom:12px}
+.egr-cat-header{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--s2);cursor:pointer;user-select:none;border-bottom:1px solid var(--bd)}
+.egr-cat-header:hover{background:#EEEDEA}
+.egr-cat-name{font-size:13px;font-weight:600;color:var(--tx);display:flex;align-items:center;gap:8px}
+.egr-cat-total{font-size:13px;font-weight:600;color:var(--ort)}
+.egr-cat-arrow{font-size:14px;color:var(--tx3);transition:transform .2s}
+.egr-cat.open .egr-cat-arrow{transform:rotate(180deg)}
+.egr-cat-body{display:none}
+.egr-cat.open .egr-cat-body{display:block}
+.egr-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:1px solid var(--bd)}
+.egr-row:last-child{border-bottom:none}
+.egr-row:hover{background:#FAFAF8}
+.egr-concepto{font-size:13px;color:var(--tx)}
+.egr-input-wrap{display:flex;align-items:center;gap:4px}
+.egr-input-wrap span{font-size:13px;color:var(--tx2)}
+.egr-input{width:120px;padding:5px 8px;border:1px solid var(--bd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);text-align:right;outline:none;transition:border-color .15s}
+.egr-input:focus{border-color:var(--or)}
+.egr-input.saving{border-color:var(--gn);background:#F5FDF0}
+.egr-total-row{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--s2);border-top:1px solid var(--bd)}
+.egr-total-row span:first-child{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3)}
+.egr-total-row span:last-child{font-size:14px;font-weight:600;color:var(--ort)}
+
 @media(max-width:900px){
   .kpi-grid{grid-template-columns:repeat(2,1fr)}
   .grid2,.grid3{grid-template-columns:1fr}
@@ -106,6 +142,14 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 </div>
 
 <div class="main">
+  <!-- TABS PRINCIPALES -->
+  <div class="main-tabs">
+    <button class="main-tab active" id="tab-resumen" onclick="setMainTab('resumen',this)"><i class="ti ti-chart-bar" style="margin-right:6px;vertical-align:-2px"></i>Resumen</button>
+    <button class="main-tab" id="tab-egresos" onclick="setMainTab('egresos',this)"><i class="ti ti-trending-down" style="margin-right:6px;vertical-align:-2px"></i>Egresos</button>
+  </div>
+
+  <!-- SECCIÓN RESUMEN -->
+  <div class="tab-section active" id="sec-resumen">
   <div class="page-header">
     <div class="page-title">Resumen financiero</div>
     <div class="period-tabs">
@@ -175,6 +219,19 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <div id="medios-content"><div class="loading"><i class="ti ti-loader"></i></div></div>
     </div>
   </div>
+  </div><!-- /sec-resumen -->
+
+  <!-- SECCIÓN EGRESOS -->
+  <div class="tab-section" id="sec-egresos">
+    <div class="egr-nav">
+      <button onclick="cambiarMes(-1)"><i class="ti ti-chevron-left"></i></button>
+      <div class="egr-mes-label" id="egr-mes-label">—</div>
+      <button onclick="cambiarMes(1)"><i class="ti ti-chevron-right"></i></button>
+      <div class="egr-total-badge">Total: <span id="egr-total-general">$0</span></div>
+    </div>
+    <div id="egr-contenido"></div>
+  </div>
+
 </div>
 
 <script>
@@ -424,6 +481,141 @@ function renderMedios(){
     </div>`;
   });
   document.getElementById('medios-content').innerHTML=html;
+}
+
+// ── TABS PRINCIPALES ─────────────────────────────────
+function setMainTab(name, btn){
+  document.querySelectorAll('.main-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tab-section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+name).classList.add('active');
+  if(name==='egresos' && !egrLoaded) initEgresos();
+}
+
+// ── EGRESOS ──────────────────────────────────────────
+const EGRESOS_ESTRUCTURA = [
+  { categoria:'Laser Bahía', conceptos:['Alquiler Lavalle','ARBA Ingresos Brutos','ARCA','Luz Lavalle','Movistar','Marcela Contadora','Internet Lavalle','Sueldo Camila']},
+  { categoria:'Otros Laser Bahía', conceptos:['Insumos LB','Otros LB']},
+  { categoria:'Vehículo', conceptos:['Ranger Patente','Ranger Seguro','Otros Ranger']},
+  { categoria:'Otros Vehículo', conceptos:['Nafta','Lavadero Ranger']},
+  { categoria:'Casa', conceptos:['ARBA Bullrich','Luz Bullrich','Gas Bullrich','ABSA Bullrich','Seguro Bullrich','Municipal Bullrich','Internet Bullrich']},
+  { categoria:'Otros Casa', conceptos:['Limpieza Bullrich','Otros Bullrich']},
+  { categoria:'Locales', conceptos:['ARBA Dorrego','ARBA Gral Paz','ARBA Extraordinario','Municipal Dorrego','Municipal Gral Paz','Alquileres']},
+  { categoria:'Otros Locales', conceptos:['Otros Locales']},
+  { categoria:'Créditos', conceptos:['Crédito UVA Casa','Crédito Inundación','Visa Hipotecario','Visa Nación','Master Nación','Mercado Pago']},
+  { categoria:'Ocio y Varios', conceptos:['Gimnasio']},
+  { categoria:'Otros Varios', conceptos:['Otros Ocio','Comida','Limpieza','Salidas','Viajes']},
+];
+
+let egrLoaded=false, egrMes, egrAnio, egrData={};
+const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function initEgresos(){
+  egrLoaded=true;
+  const now=new Date();
+  egrMes=now.getMonth()+1;
+  egrAnio=now.getFullYear();
+  cargarEgresos();
+}
+
+function cambiarMes(delta){
+  egrMes+=delta;
+  if(egrMes>12){egrMes=1;egrAnio++;}
+  if(egrMes<1){egrMes=12;egrAnio--;}
+  cargarEgresos();
+}
+
+async function cargarEgresos(){
+  document.getElementById('egr-mes-label').textContent=MESES[egrMes-1]+' '+egrAnio;
+  document.getElementById('egr-contenido').innerHTML='<div style="padding:24px;text-align:center;color:var(--tx3)"><i class="ti ti-loader"></i></div>';
+  const {data,error}=await sb.from('egresos').select('*').eq('mes',egrMes).eq('anio',egrAnio);
+  egrData={};
+  if(data) data.forEach(e=>{egrData[e.concepto]=e;});
+  renderEgresos();
+}
+
+function renderEgresos(){
+  let totalGeneral=0;
+  let html='';
+  EGRESOS_ESTRUCTURA.forEach((grupo,gi)=>{
+    let totalCat=0;
+    EGRESOS_ESTRUCTURA[gi].conceptos.forEach(c=>{
+      totalCat+=(egrData[c]?.monto||0);
+    });
+    totalGeneral+=totalCat;
+    const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
+    html+=`<div class="egr-cat open" id="egr-cat-${gi}">
+      <div class="egr-cat-header" onclick="toggleCat(${gi})">
+        <div class="egr-cat-name"><i class="ti ti-chevron-down egr-cat-arrow"></i>${grupo.categoria}</div>
+        <div class="egr-cat-total" id="egr-total-cat-${gi}">${fmtCat}</div>
+      </div>
+      <div class="egr-cat-body">`;
+    grupo.conceptos.forEach(concepto=>{
+      const val=egrData[concepto]?.monto||0;
+      const valDisplay=val>0?val:'';
+      html+=`<div class="egr-row">
+        <div class="egr-concepto">${concepto}</div>
+        <div class="egr-input-wrap">
+          <span>$</span>
+          <input class="egr-input" type="number" min="0"
+            value="${valDisplay}"
+            placeholder="0"
+            data-concepto="${concepto}"
+            data-categoria="${grupo.categoria}"
+            data-gi="${gi}"
+            onchange="guardarEgreso(this)"
+            onfocus="this.select()">
+        </div>
+      </div>`;
+    });
+    html+=`<div class="egr-total-row"><span>Total ${grupo.categoria}</span><span id="egr-subtotal-${gi}">${fmtCat}</span></div>`;
+    html+=`</div></div>`;
+  });
+  document.getElementById('egr-contenido').innerHTML=html;
+  document.getElementById('egr-total-general').textContent='$'+Math.round(totalGeneral).toLocaleString('es-AR');
+}
+
+function toggleCat(gi){
+  const cat=document.getElementById('egr-cat-'+gi);
+  cat.classList.toggle('open');
+}
+
+let saveTimers={};
+function guardarEgreso(input){
+  const concepto=input.dataset.concepto;
+  const categoria=input.dataset.categoria;
+  const gi=parseInt(input.dataset.gi);
+  const monto=parseFloat(input.value)||0;
+  input.classList.add('saving');
+
+  clearTimeout(saveTimers[concepto]);
+  saveTimers[concepto]=setTimeout(async()=>{
+    const existing=egrData[concepto];
+    let error;
+    if(existing){
+      const r=await sb.from('egresos').update({monto}).eq('id',existing.id);
+      error=r.error;
+      if(!error) egrData[concepto].monto=monto;
+    } else {
+      const r=await sb.from('egresos').insert({concepto,categoria,mes:egrMes,anio:egrAnio,monto}).select().single();
+      error=r.error;
+      if(!error) egrData[concepto]=r.data;
+    }
+    input.classList.remove('saving');
+    if(error){input.style.borderColor='#C0392B';return;}
+    // Recalcular totales
+    const grupo=EGRESOS_ESTRUCTURA[gi];
+    let totalCat=0;
+    grupo.conceptos.forEach(c=>{totalCat+=(egrData[c]?.monto||0);});
+    const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
+    document.getElementById('egr-total-cat-'+gi).textContent=fmtCat;
+    document.getElementById('egr-subtotal-'+gi).textContent=fmtCat;
+    let totalGeneral=0;
+    EGRESOS_ESTRUCTURA.forEach((g,i)=>{
+      g.conceptos.forEach(c=>{totalGeneral+=(egrData[c]?.monto||0);});
+    });
+    document.getElementById('egr-total-general').textContent='$'+Math.round(totalGeneral).toLocaleString('es-AR');
+  }, 600);
 }
 
 initAuth('finanzas').then(user=>{ if(!user)return; renderUserChip(); cargar(); });
