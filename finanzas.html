@@ -277,7 +277,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 <script>
 // sb viene de auth.js
 
-let todos=[], periodo='mes';
+let todos=[], periodo='mes', balanceEgrData={}, balanceVarData=[];
 
 function fmt(n){if(!n||isNaN(n))return'$0';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtK(n){if(!n||isNaN(n))return'$0';if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'k';return'$'+Math.round(n);}
@@ -309,8 +309,6 @@ function setPeriodo(p,btn){
   btn.classList.add('active');
   renderAll();
 }
-
-let todos=[], periodo='mes', balanceEgrData={}, balanceVarData=[];
 
 async function cargar(){
   const now=new Date();
@@ -750,7 +748,7 @@ function renderBalance(){
 }
 
 // ── GASTOS VARIABLES ─────────────────────────────────
-function toggleCatVar(){\
+function toggleCatVar(){
   const cat=document.getElementById('egr-cat-var');
   cat.classList.toggle('open');
 }
