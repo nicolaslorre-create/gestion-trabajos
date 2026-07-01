@@ -148,7 +148,7 @@ tbody tr:last-child td{border-bottom:none}
 .modal-close{width:28px;height:28px;border-radius:6px;border:1px solid var(--bd);background:transparent;display:flex;align-items:center;justify-content:center;font-size:15px;color:var(--tx2);cursor:pointer}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .ff{grid-column:1/-1}
-.fg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:5px}
+.fg label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx);margin-bottom:5px}
 .fg input,.fg select{width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;transition:border-color .15s}
 .fg input:focus,.fg select:focus{border-color:var(--or)}
 .autocomplete-wrap{position:relative}
@@ -271,7 +271,7 @@ tbody tr:last-child td{border-bottom:none}
 
 <!-- MODAL NUEVA TAREA -->
 <div class="overlay" id="overlay-nuevo">
-  <div class="modal">
+  <div class="modal" style="width:700px">
     <div class="modal-header">
       <div class="modal-title"><i class="ti ti-plus" style="color:var(--or);margin-right:6px"></i>Nueva Tarea</div>
       <button class="modal-close" onclick="closeModal('nuevo')"><i class="ti ti-x"></i></button>
@@ -288,34 +288,43 @@ tbody tr:last-child td{border-bottom:none}
         </div>
         <div><label>Teléfono</label><input type="text" id="f-tel" placeholder="291..."></div>
       </div>
-      <div>
-        <label>Material</label>
-        <select id="f-mat-id" onchange="onMatChange()">
-          <option value="">— Seleccionar —</option>
-        </select>
+      <!-- DOS COLUMNAS: procesos izquierda | inputs derecha -->
+      <div class="ff" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
+        <!-- COLUMNA IZQUIERDA: procesos -->
+        <div>
+          <label>Procesos</label>
+          <div class="proc-grid" id="proc-grid" style="margin-top:6px"><span style="color:var(--tx3);font-size:12px">Cargando...</span></div>
+        </div>
+        <!-- COLUMNA DERECHA: todos los inputs -->
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div>
+            <label>Material</label>
+            <select id="f-mat-id" onchange="onMatChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none">
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div>
+            <label>Máquina</label>
+            <select id="f-maq-id" onchange="onCotizadorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none">
+              <option value="">— Seleccionar —</option>
+            </select>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div><label>Ancho (cm)</label><input type="number" id="f-ancho" placeholder="0" step="0.1" oninput="onCotizadorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></div>
+            <div><label>Alto (cm)</label><input type="number" id="f-alto" placeholder="0" step="0.1" oninput="onCotizadorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></div>
+          </div>
+          <div><label>Cantidad</label><input type="number" id="f-qty" value="1" min="1" oninput="calcTotal()"></div>
+          <div><label>Precio Unit.</label><input type="number" id="f-precio" placeholder="0" oninput="calcTotal()"></div>
+          <div><label>Seña</label><input type="number" id="f-sena" placeholder="0" oninput="calcTotal()"></div>
+          <div><label>Otros gastos</label><input type="number" id="f-extra" placeholder="0" oninput="calcTotal()"></div>
+          <div>
+            <label>Medio de Pago</label>
+            <select id="f-pago" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
+          </div>
+          <div><label>CUIT</label><input type="text" id="f-cuit" placeholder="20-XXXXXXXX-X"></div>
+        </div>
       </div>
-      <div>
-        <label>Máquina</label>
-        <select id="f-maq-id" onchange="onCotizadorChange()">
-          <option value="">— Seleccionar —</option>
-        </select>
-      </div>
-      <div><label>Ancho (cm)</label><input type="number" id="f-ancho" placeholder="0" step="0.1" oninput="onCotizadorChange()"></div>
-      <div><label>Alto (cm)</label><input type="number" id="f-alto" placeholder="0" step="0.1" oninput="onCotizadorChange()"></div>
       <div class="ff" id="cotizador-result" style="display:none;background:var(--orl);border:1px solid #F5C89A;border-radius:var(--r);padding:12px;font-size:12px;color:var(--ort);line-height:1.8"></div>
-      <div>
-        <label>Procesos</label>
-        <div class="proc-grid" id="proc-grid"><span style="color:var(--tx3);font-size:12px">Cargando...</span></div>
-      </div>
-      <div><label>Cantidad</label><input type="number" id="f-qty" value="1" min="1" oninput="calcTotal()"></div>
-      <div><label>Precio Unit.</label><input type="number" id="f-precio" placeholder="0" oninput="calcTotal()"></div>
-      <div><label>Seña</label><input type="number" id="f-sena" placeholder="0" oninput="calcTotal()"></div>
-      <div><label>Otros gastos</label><input type="number" id="f-extra" placeholder="0" oninput="calcTotal()"></div>
-      <div>
-        <label>Medio de Pago</label>
-        <select id="f-pago"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
-      </div>
-      <div><label>CUIT</label><input type="text" id="f-cuit" placeholder="20-XXXXXXXX-X"></div>
       <div class="ff" style="background:var(--s2);border-radius:var(--r);padding:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">
         <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Total</div><div id="f-total" style="font-size:18px;font-weight:600">$0</div></div>
         <div><div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--tx3);margin-bottom:3px">Saldo</div><div id="f-saldo-calc" style="font-size:18px;font-weight:600;color:var(--cst)">$0</div></div>
