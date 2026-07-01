@@ -219,6 +219,30 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <div id="medios-content"><div class="loading"><i class="ti ti-loader"></i></div></div>
     </div>
   </div>
+  <!-- BALANCE MENSUAL -->
+  <div class="card" style="margin-bottom:16px" id="balance-section">
+    <div class="card-title"><i class="ti ti-scale"></i>Balance del mes — <span id="balance-mes-label" style="font-weight:400;color:var(--tx2)"></span></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:4px">
+      <div style="background:var(--gnl);border:1px solid #AADDA0;border-radius:var(--r);padding:14px 16px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gnt);margin-bottom:8px">Ingresos</div>
+        <div id="bal-ing-cobrado" style="display:flex;justify-content:space-between;font-size:13px;color:var(--tx);margin-bottom:4px"><span>Trabajos cobrados</span><span id="bal-v-cobrado" style="font-weight:500">—</span></div>
+        <div id="bal-ing-alq" style="display:flex;justify-content:space-between;font-size:13px;color:var(--tx);margin-bottom:8px"><span>Alquileres</span><span id="bal-v-alq" style="font-weight:500">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:var(--gnt);border-top:1px solid #AADDA0;padding-top:8px"><span>Total ingresos</span><span id="bal-total-ing">—</span></div>
+      </div>
+      <div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:var(--r);padding:14px 16px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#B91C1C;margin-bottom:8px">Egresos</div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--tx);margin-bottom:4px"><span>Gastos fijos</span><span id="bal-v-fijos" style="font-weight:500">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--tx);margin-bottom:8px"><span>Gastos variables</span><span id="bal-v-vars" style="font-weight:500">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:15px;font-weight:700;color:#B91C1C;border-top:1px solid #FCA5A5;padding-top:8px"><span>Total egresos</span><span id="bal-total-egr">—</span></div>
+      </div>
+      <div id="bal-resultado" style="border-radius:var(--r);padding:14px 16px;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px">
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Balance neto</div>
+        <div id="bal-neto" style="font-size:30px;font-weight:700;letter-spacing:-1px">—</div>
+        <div id="bal-neto-sub" style="font-size:12px"></div>
+      </div>
+    </div>
+  </div>
+
   </div><!-- /sec-resumen -->
 
   <!-- SECCIÓN EGRESOS -->
@@ -227,9 +251,25 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <button onclick="cambiarMes(-1)"><i class="ti ti-chevron-left"></i></button>
       <div class="egr-mes-label" id="egr-mes-label">—</div>
       <button onclick="cambiarMes(1)"><i class="ti ti-chevron-right"></i></button>
-      <div class="egr-total-badge">Total: <span id="egr-total-general">$0</span></div>
+      <div class="egr-total-badge">Neto: <span id="egr-total-general">$0</span> &nbsp;·&nbsp; <span style="color:var(--gnt);font-weight:600">Ingresos: <span id="egr-total-ingresos">$0</span></span></div>
     </div>
     <div id="egr-contenido"></div>
+
+    <!-- GASTOS VARIABLES -->
+    <div class="egr-cat open" id="egr-cat-var" style="margin-top:12px">
+      <div class="egr-cat-header" onclick="toggleCatVar()">
+        <div class="egr-cat-name"><i class="ti ti-chevron-down egr-cat-arrow"></i>Gastos Variables (materiales, insumos, otros)</div>
+        <div class="egr-cat-total" id="egr-total-var">—</div>
+      </div>
+      <div class="egr-cat-body" id="egr-var-body">
+        <div id="egr-var-rows"></div>
+        <div style="padding:10px 16px">
+          <button onclick="agregarVarRow()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px dashed var(--bd);border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--tx2);cursor:pointer">
+            <i class="ti ti-plus" style="font-size:13px"></i> Agregar ítem
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
 </div>
@@ -270,12 +310,21 @@ function setPeriodo(p,btn){
   renderAll();
 }
 
+let todos=[], periodo='mes', balanceEgrData={}, balanceVarData=[];
+
 async function cargar(){
-  const {data,error}=await sb.from('trabajos')
-    .select('*, clientes(nombre), materiales!trabajos_material_id_fkey(nombre)')
-    .eq('archivado',false);
+  const now=new Date();
+  const mes=now.getMonth()+1, anio=now.getFullYear();
+  const [{data:t,error},{data:egr},{data:vars}]=await Promise.all([
+    sb.from('trabajos').select('*, clientes(nombre), materiales!trabajos_material_id_fkey(nombre)').eq('archivado',false),
+    sb.from('egresos').select('*').eq('mes',mes).eq('anio',anio),
+    sb.from('egresos_variables').select('*').eq('mes',mes).eq('anio',anio)
+  ]);
   if(error){document.body.innerHTML='<p style="padding:24px;color:red">Error: '+error.message+'</p>';return;}
-  todos=data||[];
+  todos=t||[];
+  balanceEgrData={};
+  (egr||[]).forEach(e=>{balanceEgrData[e.concepto]=e;});
+  balanceVarData=vars||[];
   renderAll();
 }
 
@@ -287,6 +336,7 @@ function renderAll(){
   renderMateriales();
   renderProcesos();
   renderMedios();
+  renderBalance();
 }
 
 // ── KPIs ──────────────────────────────────────────────
@@ -507,7 +557,10 @@ const EGRESOS_ESTRUCTURA = [
   { categoria:'Otros Varios', conceptos:['Otros Ocio','Comida','Limpieza','Salidas','Viajes']},
 ];
 
-let egrLoaded=false, egrMes, egrAnio, egrData={};
+let egrLoaded=false, egrMes, egrAnio, egrData={}, egrVarData=[];
+
+const INGRESO_CONCEPTOS=['Alquileres']; // positivos — se suman como ingresos
+
 const MESES=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 function initEgresos(){
@@ -528,21 +581,25 @@ function cambiarMes(delta){
 async function cargarEgresos(){
   document.getElementById('egr-mes-label').textContent=MESES[egrMes-1]+' '+egrAnio;
   document.getElementById('egr-contenido').innerHTML='<div style="padding:24px;text-align:center;color:var(--tx3)"><i class="ti ti-loader"></i></div>';
-  const {data,error}=await sb.from('egresos').select('*').eq('mes',egrMes).eq('anio',egrAnio);
+  const [{data:d1},{data:d2}]=await Promise.all([
+    sb.from('egresos').select('*').eq('mes',egrMes).eq('anio',egrAnio),
+    sb.from('egresos_variables').select('*').eq('mes',egrMes).eq('anio',egrAnio).order('created_at')
+  ]);
   egrData={};
-  if(data) data.forEach(e=>{egrData[e.concepto]=e;});
+  if(d1) d1.forEach(e=>{egrData[e.concepto]=e;});
+  egrVarData=d2||[];
   renderEgresos();
+  renderVarRows();
 }
 
 function renderEgresos(){
-  let totalGeneral=0;
   let html='';
   EGRESOS_ESTRUCTURA.forEach((grupo,gi)=>{
     let totalCat=0;
-    EGRESOS_ESTRUCTURA[gi].conceptos.forEach(c=>{
-      totalCat+=(egrData[c]?.monto||0);
+    grupo.conceptos.forEach(c=>{
+      const monto=egrData[c]?.monto||0;
+      totalCat+=INGRESO_CONCEPTOS.includes(c)?0:monto;
     });
-    totalGeneral+=totalCat;
     const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
     html+=`<div class="egr-cat open" id="egr-cat-${gi}">
       <div class="egr-cat-header" onclick="toggleCat(${gi})">
@@ -551,20 +608,26 @@ function renderEgresos(){
       </div>
       <div class="egr-cat-body">`;
     grupo.conceptos.forEach(concepto=>{
+      const esIngreso=INGRESO_CONCEPTOS.includes(concepto);
       const val=egrData[concepto]?.monto||0;
       const valDisplay=val>0?val:'';
-      html+=`<div class="egr-row">
-        <div class="egr-concepto">${concepto}</div>
+      const ingresoStyle=esIngreso?'background:#F0FDF4;':'';
+      const labelColor=esIngreso?'color:var(--gnt);font-weight:600':'';
+      const ingresoBadge=esIngreso?'<span style="font-size:10px;background:#DCFCE7;color:var(--gnt);padding:1px 6px;border-radius:10px;margin-left:6px;font-weight:600">INGRESO</span>':'';
+      html+=`<div class="egr-row" style="${ingresoStyle}">
+        <div class="egr-concepto" style="${labelColor}">${concepto}${ingresoBadge}</div>
         <div class="egr-input-wrap">
-          <span>$</span>
+          <span style="${esIngreso?'color:var(--gnt);font-weight:600':''}">$</span>
           <input class="egr-input" type="number" min="0"
             value="${valDisplay}"
             placeholder="0"
             data-concepto="${concepto}"
             data-categoria="${grupo.categoria}"
             data-gi="${gi}"
+            data-ingreso="${esIngreso}"
             onchange="guardarEgreso(this)"
-            onfocus="this.select()">
+            onfocus="this.select()"
+            style="${esIngreso?'color:var(--gnt);border-color:#86EFAC;':''}">
         </div>
       </div>`;
     });
@@ -572,7 +635,28 @@ function renderEgresos(){
     html+=`</div></div>`;
   });
   document.getElementById('egr-contenido').innerHTML=html;
-  document.getElementById('egr-total-general').textContent='$'+Math.round(totalGeneral).toLocaleString('es-AR');
+  recalcTotal();
+}
+
+function recalcTotal(){
+  let totalEgr=0, totalIng=0;
+  EGRESOS_ESTRUCTURA.forEach(g=>{
+    g.conceptos.forEach(c=>{
+      const monto=egrData[c]?.monto||0;
+      if(INGRESO_CONCEPTOS.includes(c)) totalIng+=monto;
+      else totalEgr+=monto;
+    });
+  });
+  // sumar variables
+  egrVarData.forEach(v=>{totalEgr+=(v.monto||0);});
+  const neto=totalEgr-totalIng;
+  document.getElementById('egr-total-general').textContent='$'+Math.round(neto).toLocaleString('es-AR');
+  document.getElementById('egr-total-ingresos').textContent='$'+Math.round(totalIng).toLocaleString('es-AR');
+  // total variables
+  const totalVar=egrVarData.reduce((a,v)=>a+(v.monto||0),0);
+  const fmtVar=totalVar>0?'$'+Math.round(totalVar).toLocaleString('es-AR'):'—';
+  const el=document.getElementById('egr-total-var');
+  if(el) el.textContent=fmtVar;
 }
 
 function toggleCat(gi){
@@ -606,16 +690,135 @@ function guardarEgreso(input){
     // Recalcular totales
     const grupo=EGRESOS_ESTRUCTURA[gi];
     let totalCat=0;
-    grupo.conceptos.forEach(c=>{totalCat+=(egrData[c]?.monto||0);});
+    grupo.conceptos.forEach(c=>{
+      const monto=egrData[c]?.monto||0;
+      totalCat+=INGRESO_CONCEPTOS.includes(c)?0:monto;
+    });
     const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
     document.getElementById('egr-total-cat-'+gi).textContent=fmtCat;
     document.getElementById('egr-subtotal-'+gi).textContent=fmtCat;
-    let totalGeneral=0;
-    EGRESOS_ESTRUCTURA.forEach((g,i)=>{
-      g.conceptos.forEach(c=>{totalGeneral+=(egrData[c]?.monto||0);});
-    });
-    document.getElementById('egr-total-general').textContent='$'+Math.round(totalGeneral).toLocaleString('es-AR');
+    recalcTotal();
   }, 600);
+}
+
+// ── BALANCE MENSUAL ──────────────────────────────────
+function renderBalance(){
+  const now=new Date();
+  const MESES_LABEL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('balance-mes-label').textContent=MESES_LABEL[now.getMonth()]+' '+now.getFullYear();
+
+  // Ingresos: trabajos cobrados este mes
+  const mesActual=now.getMonth(), anioActual=now.getFullYear();
+  const cobradosMes=todos.filter(t=>{
+    if(t.estado!=='cerrado'||(t.saldo||0)>0) return false;
+    const d=new Date(t.fecha);
+    return d.getMonth()===mesActual&&d.getFullYear()===anioActual;
+  });
+  const totalCobrado=cobradosMes.reduce((a,t)=>a+(t.total||0),0);
+
+  // Ingresos: alquileres del mes
+  const totalAlq=(balanceEgrData['Alquileres']?.monto||0);
+
+  const totalIng=totalCobrado+totalAlq;
+
+  // Egresos fijos (todo menos Alquileres)
+  let totalFijos=0;
+  Object.values(balanceEgrData).forEach(e=>{
+    if(e.concepto!=='Alquileres') totalFijos+=(e.monto||0);
+  });
+
+  // Egresos variables
+  const totalVars=balanceVarData.reduce((a,v)=>a+(v.monto||0),0);
+  const totalEgr=totalFijos+totalVars;
+
+  const neto=totalIng-totalEgr;
+  const positivo=neto>=0;
+
+  document.getElementById('bal-v-cobrado').textContent=fmt(totalCobrado);
+  document.getElementById('bal-v-alq').textContent=fmt(totalAlq);
+  document.getElementById('bal-total-ing').textContent=fmt(totalIng);
+  document.getElementById('bal-v-fijos').textContent=fmt(totalFijos);
+  document.getElementById('bal-v-vars').textContent=fmt(totalVars);
+  document.getElementById('bal-total-egr').textContent=fmt(totalEgr);
+  document.getElementById('bal-neto').textContent=(positivo?'+':'')+fmt(neto);
+  document.getElementById('bal-neto').style.color=positivo?'var(--gnt)':'#B91C1C';
+  const res=document.getElementById('bal-resultado');
+  res.style.background=positivo?'var(--gnl)':'#FEF2F2';
+  res.style.border='1px solid '+(positivo?'#AADDA0':'#FCA5A5');
+  document.getElementById('bal-neto-sub').textContent=positivo?'Superávit':'Déficit';
+  document.getElementById('bal-neto-sub').style.color=positivo?'var(--gnt)':'#B91C1C';
+}
+
+// ── GASTOS VARIABLES ─────────────────────────────────
+function toggleCatVar(){\
+  const cat=document.getElementById('egr-cat-var');
+  cat.classList.toggle('open');
+}
+
+function renderVarRows(){
+  const container=document.getElementById('egr-var-rows');
+  if(!container) return;
+  if(!egrVarData.length){
+    container.innerHTML='<div style="padding:10px 16px;font-size:12px;color:var(--tx3)">Sin ítems. Hacé click en Agregar ítem.</div>';
+    recalcTotal();
+    return;
+  }
+  container.innerHTML=egrVarData.map((v,i)=>`
+    <div class="egr-row" id="egr-var-row-${v.id}">
+      <input type="text" value="${v.descripcion||''}"
+        placeholder="Descripción del gasto..."
+        style="flex:1;padding:5px 8px;border:1px solid var(--bd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-right:10px"
+        onchange="actualizarVarDesc(this,'${v.id}')"
+        onfocus="this.select()">
+      <div class="egr-input-wrap">
+        <span>$</span>
+        <input class="egr-input" type="number" min="0"
+          value="${v.monto||''}"
+          placeholder="0"
+          onchange="actualizarVarMonto(this,'${v.id}')"
+          onfocus="this.select()">
+      </div>
+      <button onclick="eliminarVar('${v.id}')" style="margin-left:8px;width:24px;height:24px;border:1px solid #F5C0C0;border-radius:6px;background:transparent;cursor:pointer;color:#C0392B;display:flex;align-items:center;justify-content:center;font-size:13px"><i class="ti ti-x"></i></button>
+    </div>`).join('');
+  recalcTotal();
+}
+
+async function agregarVarRow(){
+  const {data,error}=await sb.from('egresos_variables')
+    .insert({descripcion:'',mes:egrMes,anio:egrAnio,monto:0})
+    .select().single();
+  if(error){console.error(error);return;}
+  egrVarData.push(data);
+  renderVarRows();
+  // focus the new description input
+  setTimeout(()=>{
+    const row=document.getElementById('egr-var-row-'+data.id);
+    if(row) row.querySelector('input[type=text]').focus();
+  },50);
+}
+
+async function actualizarVarDesc(input,id){
+  const desc=input.value.trim();
+  await sb.from('egresos_variables').update({descripcion:desc}).eq('id',id);
+  const item=egrVarData.find(v=>v.id===id);
+  if(item) item.descripcion=desc;
+}
+
+async function actualizarVarMonto(input,id){
+  const monto=parseFloat(input.value)||0;
+  input.classList.add('saving');
+  await sb.from('egresos_variables').update({monto}).eq('id',id);
+  const item=egrVarData.find(v=>v.id===id);
+  if(item) item.monto=monto;
+  input.classList.remove('saving');
+  recalcTotal();
+}
+
+async function eliminarVar(id){
+  const {error}=await sb.from('egresos_variables').delete().eq('id',id);
+  if(error){console.error(error);return;}
+  egrVarData=egrVarData.filter(v=>v.id!==id);
+  renderVarRows();
 }
 
 initAuth('finanzas').then(user=>{ if(!user)return; renderUserChip(); cargar(); });
