@@ -450,15 +450,28 @@ function renderMateriales(){
     const precioCm2=area>0&&m.precio_costo>0?'$'+(m.precio_costo/area).toFixed(4)+'/cm²':'—';
     const dims=(m.ancho_cm&&m.alto_cm)?(m.ancho_cm+'×'+m.alto_cm+'cm'):'—';
     const usdLabel=m.precio_lista_usd>0?'US$'+m.precio_lista_usd.toLocaleString('es-AR'):'—';
+    // Si el material tiene precio en USD, calcular ARS en tiempo real
+    const precioListaArs=m.precio_lista_usd>0
+      ?Math.round(m.precio_lista_usd*cotizacionUSD)
+      :m.precio_lista;
+    const precioCostoArs=m.precio_costo_usd>0
+      ?Math.round(m.precio_costo_usd*cotizacionUSD)
+      :m.precio_costo;
+    const margenCalc=precioCostoArs>0&&precioListaArs>0
+      ?Math.round((precioListaArs-precioCostoArs)/precioCostoArs*100)+'%':'—';
+    const area=(m.ancho_cm||0)*(m.alto_cm||0);
+    const precioCm2=area>0&&precioCostoArs>0?'$'+(precioCostoArs/area).toFixed(4)+'/cm²':'—';
+    const esUsd=m.precio_lista_usd>0;
+    const precioListaDisplay='$'+precioListaArs.toLocaleString('es-AR')+(esUsd?' 🔄':'');
     return '<tr>'+
       '<td style="font-weight:500">'+m.nombre+'</td>'+
       '<td style="color:var(--tx2)">'+(m.espesor||'—')+'</td>'+
       '<td><span style="display:inline-flex;padding:2px 8px;border-radius:6px;font-size:11px;font-weight:500;background:'+cc+';color:'+ct+'">'+(m.categoria||'—')+'</span></td>'+
       '<td style="color:var(--tx2);font-size:12px">'+dims+'</td>'+
-      '<td>'+fmt(m.precio_costo)+'</td>'+
-      '<td>'+fmt(m.precio_lista)+'</td>'+
+      '<td>'+'$'+precioCostoArs.toLocaleString('es-AR')+'</td>'+
+      '<td style="'+(esUsd?'color:var(--cn);font-weight:500':'')+'">'+precioListaDisplay+'</td>'+
       '<td style="color:var(--tx2);font-size:12px">'+usdLabel+'</td>'+
-      '<td style="color:var(--gnt);font-weight:500">'+margen+'</td>'+
+      '<td style="color:var(--gnt);font-weight:500">'+margenCalc+'</td>'+
       '<td style="color:var(--tx2);font-size:11px">'+precioCm2+'</td>'+
       '<td style="text-align:center"><label class="toggle"><input type="checkbox" '+(m.activo?'checked':'')+' onchange="toggleMaterial(\''+m.id+'\',this.checked)"><span class="toggle-slider"></span></label></td>'+
       '<td style="text-align:center"><button class="btn-icon" onclick="openMaterial(\''+m.id+'\')"><i class="ti ti-pencil"></i></button></td>'+
@@ -507,9 +520,11 @@ function syncArsFromUsd(){
 async function guardarCotizacion(){
   const val=parseFloat(document.getElementById('cotizacion-input').value)||1000;
   cotizacionUSD=val;
+  document.getElementById('cot-display').textContent=val.toLocaleString('es-AR');
   const r=await sb.from('config').update({cotizacion_usd:val,updated_at:new Date().toISOString()}).eq('id',1);
   if(r.error){showToast('Error: '+r.error.message,true);return;}
-  showToast('Cotización actualizada: $'+val.toLocaleString('es-AR'));
+  renderMateriales(); // recalcula ARS en tiempo real
+  showToast('Cotización actualizada: $'+val.toLocaleString('es-AR')+' ARS/USD');
 }
 
 function calcMargen(){
