@@ -257,12 +257,11 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     <div style="background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);padding:14px 16px;margin-bottom:16px">
       <div id="var-cats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Laser Bahía" style="accent-color:var(--or)"> Laser Bahía</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Ocio y Varios" style="accent-color:var(--or)"> Ocio y Varios</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Locales" style="accent-color:var(--or)"> Locales</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Casa" style="accent-color:var(--or)"> Casa</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Créditos" style="accent-color:var(--or)"> Créditos</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Vehículo" style="accent-color:var(--or)"> Vehículo</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Otros" style="accent-color:var(--or)"> Otros</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Casa" style="accent-color:var(--or)"> Casa</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Locales" style="accent-color:var(--or)"> Locales</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Créditos" style="accent-color:var(--or)"> Créditos</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Ocio y Varios" style="accent-color:var(--or)"> Ocio y Varios</label>
       </div>
       <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <input type="text" id="var-desc" placeholder="Descripción del gasto..."
@@ -550,17 +549,12 @@ function setMainTab(name, btn){
 
 // ── EGRESOS ──────────────────────────────────────────
 const EGRESOS_ESTRUCTURA = [
-  { categoria:'Laser Bahía', conceptos:['Alquiler Lavalle','ARBA Ingresos Brutos','ARCA','Luz Lavalle','Movistar','Marcela Contadora','Internet Lavalle','Sueldo Camila']},
-  { categoria:'Otros Laser Bahía', conceptos:['Insumos LB','Otros LB']},
-  { categoria:'Vehículo', conceptos:['Ranger Patente','Ranger Seguro','Otros Ranger']},
-  { categoria:'Otros Vehículo', conceptos:['Nafta','Lavadero Ranger']},
-  { categoria:'Casa', conceptos:['ARBA Bullrich','Luz Bullrich','Gas Bullrich','ABSA Bullrich','Seguro Bullrich','Municipal Bullrich','Internet Bullrich']},
-  { categoria:'Otros Casa', conceptos:['Limpieza Bullrich','Otros Bullrich']},
+  { categoria:'Laser Bahía', conceptos:['Alquiler Lavalle','ARBA Ingresos Brutos','ARCA','Luz Lavalle','Movistar','Marcela Contadora','Internet Lavalle','Sueldo Camila','Insumos LB']},
+  { categoria:'Vehículo', conceptos:['Ranger Patente','Ranger Seguro','Nafta','Lavadero Ranger']},
+  { categoria:'Casa', conceptos:['ARBA Bullrich','Luz Bullrich','Gas Bullrich','ABSA Bullrich','Seguro Bullrich','Municipal Bullrich','Internet Bullrich','Limpieza Bullrich']},
   { categoria:'Locales', conceptos:['ARBA Dorrego','ARBA Gral Paz','ARBA Extraordinario','Municipal Dorrego','Municipal Gral Paz','Alquileres']},
-  { categoria:'Otros Locales', conceptos:['Otros Locales']},
   { categoria:'Créditos', conceptos:['Crédito UVA Casa','Crédito Inundación','Visa Hipotecario','Visa Nación','Master Nación','Mercado Pago']},
-  { categoria:'Ocio y Varios', conceptos:['Gimnasio']},
-  { categoria:'Otros Varios', conceptos:['Otros Ocio','Comida','Limpieza','Salidas','Viajes']},
+  { categoria:'Ocio y Varios', conceptos:['Gimnasio','Comida','Limpieza','Salidas','Viajes']},
 ];
 
 let egrLoaded=false, egrMes, egrAnio, egrData={}, egrVarData=[];
