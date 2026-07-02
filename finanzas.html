@@ -257,7 +257,16 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 
     <!-- FORMULARIO GASTO VARIABLE -->
     <div style="background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);padding:14px 16px;margin-bottom:16px">
-      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+      <div id="var-cats" style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Laser Bahía" style="accent-color:var(--or)"> Laser Bahía</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Ocio y Varios" style="accent-color:var(--or)"> Ocio y Varios</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Locales" style="accent-color:var(--or)"> Locales</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Casa" style="accent-color:var(--or)"> Casa</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Créditos" style="accent-color:var(--or)"> Créditos</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Vehículo" style="accent-color:var(--or)"> Vehículo</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Otros" style="accent-color:var(--or)"> Otros</label>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
         <input type="text" id="var-desc" placeholder="Descripción del gasto..."
           style="flex:1;min-width:200px;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
         <div style="display:flex;align-items:center;gap:4px">
@@ -267,15 +276,6 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
         </div>
         <button onclick="guardarVarNuevo()" style="padding:8px 14px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap"><i class="ti ti-plus"></i> Agregar</button>
         <button onclick="limpiarVarForm()" style="width:30px;height:34px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx3);display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>
-      </div>
-      <div id="var-cats" style="display:flex;gap:10px;flex-wrap:wrap">
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Laser Bahía" style="accent-color:var(--or)"> Laser Bahía</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Ocio y Varios" style="accent-color:var(--or)"> Ocio y Varios</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Locales" style="accent-color:var(--or)"> Locales</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Casa" style="accent-color:var(--or)"> Casa</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Créditos" style="accent-color:var(--or)"> Créditos</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Vehículo" style="accent-color:var(--or)"> Vehículo</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Otros" style="accent-color:var(--or)"> Otros</label>
       </div>
     </div>
   </div>
