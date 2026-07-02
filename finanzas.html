@@ -255,19 +255,27 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
     </div>
     <div id="egr-contenido"></div>
 
-    <!-- GASTOS VARIABLES -->
-    <div class="egr-cat open" id="egr-cat-var" style="margin-top:12px">
-      <div class="egr-cat-header" onclick="toggleCatVar()">
-        <div class="egr-cat-name"><i class="ti ti-chevron-down egr-cat-arrow"></i>Gastos Variables (materiales, insumos, otros)</div>
-        <div class="egr-cat-total" id="egr-total-var">—</div>
-      </div>
-      <div class="egr-cat-body" id="egr-var-body">
-        <div id="egr-var-rows"></div>
-        <div style="padding:10px 16px">
-          <button onclick="agregarVarRow()" style="display:flex;align-items:center;gap:6px;padding:6px 12px;border:1px dashed var(--bd);border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:12px;color:var(--tx2);cursor:pointer">
-            <i class="ti ti-plus" style="font-size:13px"></i> Agregar ítem
-          </button>
+    <!-- FORMULARIO GASTO VARIABLE -->
+    <div style="background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);padding:14px 16px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap">
+        <input type="text" id="var-desc" placeholder="Descripción del gasto..."
+          style="flex:1;min-width:200px;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none">
+        <div style="display:flex;align-items:center;gap:4px">
+          <span style="font-size:13px;color:var(--tx2)">$</span>
+          <input type="number" id="var-monto" placeholder="0" min="0"
+            style="width:110px;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;text-align:right">
         </div>
+        <button onclick="guardarVarNuevo()" style="padding:8px 14px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;white-space:nowrap"><i class="ti ti-plus"></i> Agregar</button>
+        <button onclick="limpiarVarForm()" style="width:30px;height:34px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx3);display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>
+      </div>
+      <div id="var-cats" style="display:flex;gap:10px;flex-wrap:wrap">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Laser Bahía" style="accent-color:var(--or)"> Laser Bahía</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Ocio y Varios" style="accent-color:var(--or)"> Ocio y Varios</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Locales" style="accent-color:var(--or)"> Locales</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Casa" style="accent-color:var(--or)"> Casa</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Créditos" style="accent-color:var(--or)"> Créditos</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Vehículo" style="accent-color:var(--or)"> Vehículo</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer"><input type="checkbox" value="Otros" style="accent-color:var(--or)"> Otros</label>
       </div>
     </div>
   </div>
@@ -593,48 +601,34 @@ async function cargarEgresos(){
 function renderEgresos(){
   let html='';
   EGRESOS_ESTRUCTURA.forEach((grupo,gi)=>{
+    const varsDeCat=egrVarData.filter(v=>v.categoria===grupo.categoria);
     let totalCat=0;
     grupo.conceptos.forEach(c=>{
       const monto=egrData[c]?.monto||0;
-      totalCat+=INGRESO_CONCEPTOS.includes(c)?0:monto;
+      if(!INGRESO_CONCEPTOS.includes(c)) totalCat+=monto;
     });
+    varsDeCat.forEach(v=>totalCat+=(v.monto||0));
     const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
-    html+=`<div class="egr-cat open" id="egr-cat-${gi}">
-      <div class="egr-cat-header" onclick="toggleCat(${gi})">
-        <div class="egr-cat-name"><i class="ti ti-chevron-down egr-cat-arrow"></i>${grupo.categoria}</div>
-        <div class="egr-cat-total" id="egr-total-cat-${gi}">${fmtCat}</div>
-      </div>
-      <div class="egr-cat-body">`;
-    grupo.conceptos.forEach(concepto=>{
+    html+='<div class="egr-cat open" id="egr-cat-'+gi+'"><div class="egr-cat-header" onclick="toggleCat('+gi+')"><div class="egr-cat-name"><i class="ti ti-chevron-down egr-cat-arrow"></i>'+grupo.categoria+'</div><div class="egr-cat-total" id="egr-total-cat-'+gi+'">'+fmtCat+'</div></div><div class="egr-cat-body">';
+    grupo.conceptos.forEach(function(concepto){
       const esIngreso=INGRESO_CONCEPTOS.includes(concepto);
       const val=egrData[concepto]?.monto||0;
-      const valDisplay=val>0?val:'';
-      const ingresoStyle=esIngreso?'background:#F0FDF4;':'';
-      const labelColor=esIngreso?'color:var(--gnt);font-weight:600':'';
-      const ingresoBadge=esIngreso?'<span style="font-size:10px;background:#DCFCE7;color:var(--gnt);padding:1px 6px;border-radius:10px;margin-left:6px;font-weight:600">INGRESO</span>':'';
-      html+=`<div class="egr-row" style="${ingresoStyle}">
-        <div class="egr-concepto" style="${labelColor}">${concepto}${ingresoBadge}</div>
-        <div class="egr-input-wrap">
-          <span style="${esIngreso?'color:var(--gnt);font-weight:600':''}">$</span>
-          <input class="egr-input" type="number" min="0"
-            value="${valDisplay}"
-            placeholder="0"
-            data-concepto="${concepto}"
-            data-categoria="${grupo.categoria}"
-            data-gi="${gi}"
-            data-ingreso="${esIngreso}"
-            onchange="guardarEgreso(this)"
-            onfocus="this.select()"
-            style="${esIngreso?'color:var(--gnt);border-color:#86EFAC;':''}">
-        </div>
-      </div>`;
+      const ingresoStyle=esIngreso?'background:#F0FDF4;':'';;
+      const labelColor=esIngreso?'color:var(--gnt);font-weight:600':'';;
+      const ingresoBadge=esIngreso?'<span style="font-size:10px;background:#DCFCE7;color:var(--gnt);padding:1px 6px;border-radius:10px;margin-left:6px;font-weight:600">INGRESO</span>':'';;
+      const dollarStyle=esIngreso?'color:var(--gnt);font-weight:600':'';;
+      const inputStyle=esIngreso?'color:var(--gnt);border-color:#86EFAC;':'';;
+      html+='<div class="egr-row" style="'+ingresoStyle+'"><div class="egr-concepto" style="'+labelColor+'">'+concepto+ingresoBadge+'</div><div class="egr-input-wrap"><span style="'+dollarStyle+'">$</span><input class="egr-input" type="number" min="0" value="'+( val>0?val:'')+'" placeholder="0" data-concepto="'+concepto+'" data-categoria="'+grupo.categoria+'" data-gi="'+gi+'" data-ingreso="'+esIngreso+'" onchange="guardarEgreso(this)" onfocus="this.select()" style="'+inputStyle+'"></div></div>';
     });
-    html+=`<div class="egr-total-row"><span>Total ${grupo.categoria}</span><span id="egr-subtotal-${gi}">${fmtCat}</span></div>`;
-    html+=`</div></div>`;
+    varsDeCat.forEach(function(v){
+      html+='<div class="egr-row" id="egr-var-row-'+v.id+'" style="background:#FAFAF5"><div style="display:flex;align-items:center;gap:8px;flex:1"><span style="font-size:10px;background:var(--orl);color:var(--ort);padding:1px 6px;border-radius:10px;font-weight:600;white-space:nowrap">VARIABLE</span><input type="text" value="'+( v.descripcion||'')+'" placeholder="Descripción..." style="flex:1;padding:4px 8px;border:1px solid var(--bd);border-radius:6px;font-family:DM Sans,sans-serif;font-size:12px;outline:none" onchange="actualizarVarDesc(this,\''+v.id+'\')"></div><div class="egr-input-wrap" style="margin-left:10px"><span>$</span><input class="egr-input" type="number" min="0" value="'+( v.monto>0?v.monto:'')+'" placeholder="0" onchange="actualizarVarMonto(this,\''+v.id+'\','+gi+')" onfocus="this.select()"></div><button onclick="eliminarVar(\''+v.id+'\','+gi+')" style="margin-left:8px;width:24px;height:24px;border:1px solid #F5C0C0;border-radius:6px;background:transparent;cursor:pointer;color:#C0392B;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0"><i class="ti ti-x"></i></button></div>';
+    });
+    html+='<div class="egr-total-row"><span>Total '+grupo.categoria+'</span><span id="egr-subtotal-'+gi+'">'+fmtCat+'</span></div></div></div>';
   });
   document.getElementById('egr-contenido').innerHTML=html;
   recalcTotal();
 }
+
 
 function recalcTotal(){
   let totalEgr=0, totalIng=0;
@@ -748,51 +742,26 @@ function renderBalance(){
 }
 
 // ── GASTOS VARIABLES ─────────────────────────────────
-function toggleCatVar(){
-  const cat=document.getElementById('egr-cat-var');
-  cat.classList.toggle('open');
+function limpiarVarForm(){
+  document.getElementById('var-desc').value='';
+  document.getElementById('var-monto').value='';
+  document.querySelectorAll('#var-cats input[type=checkbox]').forEach(cb=>cb.checked=false);
 }
 
-function renderVarRows(){
-  const container=document.getElementById('egr-var-rows');
-  if(!container) return;
-  if(!egrVarData.length){
-    container.innerHTML='<div style="padding:10px 16px;font-size:12px;color:var(--tx3)">Sin ítems. Hacé click en Agregar ítem.</div>';
-    recalcTotal();
-    return;
-  }
-  container.innerHTML=egrVarData.map((v,i)=>`
-    <div class="egr-row" id="egr-var-row-${v.id}">
-      <input type="text" value="${v.descripcion||''}"
-        placeholder="Descripción del gasto..."
-        style="flex:1;padding:5px 8px;border:1px solid var(--bd);border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13px;outline:none;margin-right:10px"
-        onchange="actualizarVarDesc(this,'${v.id}')"
-        onfocus="this.select()">
-      <div class="egr-input-wrap">
-        <span>$</span>
-        <input class="egr-input" type="number" min="0"
-          value="${v.monto||''}"
-          placeholder="0"
-          onchange="actualizarVarMonto(this,'${v.id}')"
-          onfocus="this.select()">
-      </div>
-      <button onclick="eliminarVar('${v.id}')" style="margin-left:8px;width:24px;height:24px;border:1px solid #F5C0C0;border-radius:6px;background:transparent;cursor:pointer;color:#C0392B;display:flex;align-items:center;justify-content:center;font-size:13px"><i class="ti ti-x"></i></button>
-    </div>`).join('');
-  recalcTotal();
-}
-
-async function agregarVarRow(){
+async function guardarVarNuevo(){
+  const desc=document.getElementById('var-desc').value.trim();
+  const monto=parseFloat(document.getElementById('var-monto').value)||0;
+  const catChecked=[...document.querySelectorAll('#var-cats input[type=checkbox]:checked')].map(cb=>cb.value);
+  if(!desc){alert('Ingresá una descripción');return;}
+  if(!catChecked.length){alert('Seleccioná al menos una categoría');return;}
+  const categoria=catChecked[0]; // primera categoría seleccionada
   const {data,error}=await sb.from('egresos_variables')
-    .insert({descripcion:'',mes:egrMes,anio:egrAnio,monto:0})
+    .insert({descripcion:desc,mes:egrMes,anio:egrAnio,monto,categoria})
     .select().single();
   if(error){console.error(error);return;}
   egrVarData.push(data);
-  renderVarRows();
-  // focus the new description input
-  setTimeout(()=>{
-    const row=document.getElementById('egr-var-row-'+data.id);
-    if(row) row.querySelector('input[type=text]').focus();
-  },50);
+  limpiarVarForm();
+  renderEgresos();
 }
 
 async function actualizarVarDesc(input,id){
@@ -802,22 +771,38 @@ async function actualizarVarDesc(input,id){
   if(item) item.descripcion=desc;
 }
 
-async function actualizarVarMonto(input,id){
+async function actualizarVarMonto(input,id,gi){
   const monto=parseFloat(input.value)||0;
   input.classList.add('saving');
   await sb.from('egresos_variables').update({monto}).eq('id',id);
   const item=egrVarData.find(v=>v.id===id);
   if(item) item.monto=monto;
   input.classList.remove('saving');
+  // update category total
+  const grupo=EGRESOS_ESTRUCTURA[gi];
+  if(grupo){
+    const varsDeCat=egrVarData.filter(v=>v.categoria===grupo.categoria);
+    let total=0;
+    grupo.conceptos.forEach(c=>{if(!INGRESO_CONCEPTOS.includes(c))total+=(egrData[c]?.monto||0);});
+    varsDeCat.forEach(v=>total+=(v.monto||0));
+    const fmt='$'+Math.round(total).toLocaleString('es-AR');
+    const tc=document.getElementById('egr-total-cat-'+gi);
+    const st=document.getElementById('egr-subtotal-'+gi);
+    if(tc)tc.textContent=total>0?fmt:'—';
+    if(st)st.textContent=total>0?fmt:'—';
+  }
   recalcTotal();
 }
 
-async function eliminarVar(id){
+async function eliminarVar(id,gi){
   const {error}=await sb.from('egresos_variables').delete().eq('id',id);
   if(error){console.error(error);return;}
   egrVarData=egrVarData.filter(v=>v.id!==id);
-  renderVarRows();
+  const row=document.getElementById('egr-var-row-'+id);
+  if(row) row.remove();
+  recalcTotal();
 }
+
 
 initAuth('finanzas').then(user=>{ if(!user)return; renderUserChip(); cargar(); });
 </script>
