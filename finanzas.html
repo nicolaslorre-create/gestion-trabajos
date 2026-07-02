@@ -595,7 +595,6 @@ async function cargarEgresos(){
   if(d1) d1.forEach(e=>{egrData[e.concepto]=e;});
   egrVarData=d2||[];
   renderEgresos();
-  renderVarRows();
 }
 
 function renderEgresos(){
@@ -798,9 +797,7 @@ async function eliminarVar(id,gi){
   const {error}=await sb.from('egresos_variables').delete().eq('id',id);
   if(error){console.error(error);return;}
   egrVarData=egrVarData.filter(v=>v.id!==id);
-  const row=document.getElementById('egr-var-row-'+id);
-  if(row) row.remove();
-  recalcTotal();
+  renderEgresos();
 }
 
 
