@@ -442,26 +442,17 @@ function renderMateriales(){
   const tbody=document.getElementById('tbody-mat');
   if(!materiales.length){tbody.innerHTML='<tr><td colspan="10" class="empty">No hay materiales aún</td></tr>';return;}
   tbody.innerHTML=materiales.map(m=>{
-    const margen=m.precio_costo>0&&m.precio_lista>0
-      ?Math.round((m.precio_lista-m.precio_costo)/m.precio_costo*100)+'%' : '—';
     const cc=CAT_COLORS[m.categoria]||CAT_COLORS['Otro'];
     const ct=CAT_TC[m.categoria]||CAT_TC['Otro'];
-    const area=(m.ancho_cm||0)*(m.alto_cm||0);
-    const precioCm2=area>0&&m.precio_costo>0?'$'+(m.precio_costo/area).toFixed(4)+'/cm²':'—';
     const dims=(m.ancho_cm&&m.alto_cm)?(m.ancho_cm+'×'+m.alto_cm+'cm'):'—';
     const usdLabel=m.precio_lista_usd>0?'US$'+m.precio_lista_usd.toLocaleString('es-AR'):'—';
-    // Si el material tiene precio en USD, calcular ARS en tiempo real
-    const precioListaArs=m.precio_lista_usd>0
-      ?Math.round(m.precio_lista_usd*cotizacionUSD)
-      :m.precio_lista;
-    const precioCostoArs=m.precio_costo_usd>0
-      ?Math.round(m.precio_costo_usd*cotizacionUSD)
-      :m.precio_costo;
+    const esUsd=m.precio_lista_usd>0;
+    const precioListaArs=esUsd?Math.round(m.precio_lista_usd*cotizacionUSD):(m.precio_lista||0);
+    const precioCostoArs=m.precio_costo_usd>0?Math.round(m.precio_costo_usd*cotizacionUSD):(m.precio_costo||0);
     const margenCalc=precioCostoArs>0&&precioListaArs>0
       ?Math.round((precioListaArs-precioCostoArs)/precioCostoArs*100)+'%':'—';
     const area=(m.ancho_cm||0)*(m.alto_cm||0);
     const precioCm2=area>0&&precioCostoArs>0?'$'+(precioCostoArs/area).toFixed(4)+'/cm²':'—';
-    const esUsd=m.precio_lista_usd>0;
     const precioListaDisplay='$'+precioListaArs.toLocaleString('es-AR')+(esUsd?' 🔄':'');
     return '<tr>'+
       '<td style="font-weight:500">'+m.nombre+'</td>'+
