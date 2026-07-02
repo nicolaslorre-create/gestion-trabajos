@@ -260,10 +260,10 @@ tbody tr:hover td{background:var(--s2)}
       </div>
       <div><label>Ancho placa (cm)</label><input type="number" id="mat-ancho" placeholder="0" oninput="calcMargen()"></div>
       <div><label>Alto placa (cm)</label><input type="number" id="mat-alto" placeholder="0" oninput="calcMargen()"></div>
-      <div><label>Precio Costo (placa, ARS)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
-      <div><label>Precio Lista (placa, ARS)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen();syncUsdFromArs()"></div>
-      <div><label>Precio Costo (USD)</label><input type="number" id="mat-costo-usd" placeholder="0" oninput="syncArsFromUsd()"></div>
-      <div><label>Precio Lista (USD)</label><input type="number" id="mat-lista-usd" placeholder="0" oninput="syncArsFromUsd()"></div>
+      <div><label>Precio Costo (placa, ARS)</label><input type="number" id="mat-costo" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Precio Lista (placa, ARS)</label><input type="number" id="mat-lista" placeholder="0" oninput="calcMargen()"></div>
+      <div><label>Precio Costo (USD)</label><input type="number" id="mat-costo-usd" placeholder="0" oninput="onUsdInput()"></div>
+      <div><label>Precio Lista (USD)</label><input type="number" id="mat-lista-usd" placeholder="0" oninput="onUsdInput()"></div>
       <div class="ff" style="font-size:11px;color:var(--tx3)"><i class="ti ti-info-circle" style="margin-right:4px;vertical-align:-1px"></i>Cotización actual: $<span id="cot-display">1000</span> ARS/USD</div>
       <div class="ff margen-preview" id="margen-preview"></div>
     </div>
@@ -484,22 +484,17 @@ function openMaterial(id){
   document.getElementById('mat-costo-usd').value=m?m.precio_costo_usd||'':'';
   document.getElementById('mat-lista-usd').value=m?m.precio_lista_usd||'':'';
   document.getElementById('cot-display').textContent=cotizacionUSD.toLocaleString('es-AR');
+  usdTouched=false;
   document.getElementById('mat-btn-delete').style.display=m?'flex':'none';
   document.getElementById('margen-preview').style.display='none';
   document.getElementById('overlay-mat').classList.add('open');
   setTimeout(function(){document.getElementById('mat-nombre').focus();},100);
 }
 
-let syncingPrice=false;
-function syncUsdFromArs(){
-  if(syncingPrice)return; syncingPrice=true;
-  const costoArs=parseFloat(document.getElementById('mat-costo').value)||0;
-  const listaArs=parseFloat(document.getElementById('mat-lista').value)||0;
-  if(costoArs>0) document.getElementById('mat-costo-usd').value=(costoArs/cotizacionUSD).toFixed(2);
-  if(listaArs>0) document.getElementById('mat-lista-usd').value=(listaArs/cotizacionUSD).toFixed(2);
-  syncingPrice=false;
-}
-function syncArsFromUsd(){
+let syncingPrice=false, usdTouched=false;
+function onUsdInput(){
+  usdTouched=true;
+  // Si el usuario escribe en USD, actualizar ARS como referencia
   if(syncingPrice)return; syncingPrice=true;
   const costoUsd=parseFloat(document.getElementById('mat-costo-usd').value)||0;
   const listaUsd=parseFloat(document.getElementById('mat-lista-usd').value)||0;
@@ -508,6 +503,8 @@ function syncArsFromUsd(){
   syncingPrice=false;
   calcMargen();
 }
+function syncUsdFromArs(){} // no-op — ya no se usa
+function syncArsFromUsd(){} // no-op — ya no se usa
 async function guardarCotizacion(){
   const val=parseFloat(document.getElementById('cotizacion-input').value)||1000;
   cotizacionUSD=val;
@@ -547,8 +544,8 @@ async function guardarMaterial(){
     alto_cm:parseFloat(document.getElementById('mat-alto').value)||0,
     precio_costo:parseFloat(document.getElementById('mat-costo').value)||0,
     precio_lista:parseFloat(document.getElementById('mat-lista').value)||0,
-    precio_costo_usd:parseFloat(document.getElementById('mat-costo-usd').value)||0,
-    precio_lista_usd:parseFloat(document.getElementById('mat-lista-usd').value)||0,
+    precio_costo_usd:usdTouched?parseFloat(document.getElementById('mat-costo-usd').value)||0:0,
+    precio_lista_usd:usdTouched?parseFloat(document.getElementById('mat-lista-usd').value)||0:0,
     activo:true
   };
   let error;
