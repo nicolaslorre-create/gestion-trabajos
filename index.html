@@ -176,6 +176,12 @@ tbody tr:last-child td{border-bottom:none}
 .pc-dardo{background:#FAECE7;color:#993C1D}
 .pc-default{background:#F3F2EF;color:#5F5E5A}
 
+/* RADIO CHIPS */
+.radio-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px}
+.radio-chip{display:flex;align-items:center;gap:5px;padding:6px 12px;border:1.5px solid var(--bd);border-radius:20px;font-size:12px;color:var(--tx2);cursor:pointer;user-select:none;transition:all .15s;background:var(--surface)}
+.radio-chip:hover{border-color:var(--or);color:var(--ort)}
+.radio-chip.selected{background:var(--or);border-color:var(--or);color:#fff}
+
 .modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:22px;padding-top:18px;border-top:1px solid var(--bd)}
 .btn-cancel{padding:8px 16px;border:1px solid var(--bd);border-radius:var(--r);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx2);cursor:pointer}
 .btn-save{padding:8px 18px;background:var(--or);border:none;border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px}
@@ -305,9 +311,7 @@ tbody tr:last-child td{border-bottom:none}
           </div>
           <div>
             <label>Máquina</label>
-            <select id="f-maq-id" onchange="onCotizadorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none">
-              <option value="">— Seleccionar —</option>
-            </select>
+            <div class="radio-chips" id="f-maq-chips" style="margin-top:6px"><span style="color:var(--tx3);font-size:12px">Cargando...</span></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
             <div><label>Ancho (cm)</label><input type="number" id="f-ancho" placeholder="0" step="0.1" oninput="onCotizadorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;outline:none"></div>
@@ -319,7 +323,11 @@ tbody tr:last-child td{border-bottom:none}
           <div><label>Otros gastos</label><input type="number" id="f-extra" placeholder="0" oninput="calcTotal()"></div>
           <div>
             <label>Medio de Pago</label>
-            <select id="f-pago" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none"><option value="">—</option><option value="EF">Efectivo</option><option value="TF">Transferencia</option><option value="CC">Tarjeta Crédito</option></select>
+            <div class="radio-chips" style="margin-top:6px">
+              <div class="radio-chip" data-value="EF" onclick="selRadio(this,'pago')"><i class="ti ti-cash" style="font-size:12px"></i> Efectivo</div>
+              <div class="radio-chip" data-value="TF" onclick="selRadio(this,'pago')"><i class="ti ti-transfer" style="font-size:12px"></i> Transferencia</div>
+              <div class="radio-chip" data-value="CC" onclick="selRadio(this,'pago')"><i class="ti ti-credit-card" style="font-size:12px"></i> Tarjeta</div>
+            </div>
           </div>
           <div><label>CUIT</label><input type="text" id="f-cuit" placeholder="20-XXXXXXXX-X"></div>
         </div>
@@ -732,20 +740,32 @@ function populateMatSelect(){
   });
 }
 function populateMaqSelect(){
-  const sel=document.getElementById('f-maq-id');
-  if(!sel) return;
-  sel.innerHTML='<option value="">— Sin cotizar —</option>';
-  maquinas.forEach(mq=>{
-    const opt=document.createElement('option');
-    opt.value=mq.id;
-    opt.textContent=mq.nombre+(mq.tipo?' ('+mq.tipo+')':'');
-    sel.appendChild(opt);
-  });
+  const container=document.getElementById('f-maq-chips');
+  if(!container) return;
+  if(!maquinas.length){container.innerHTML='<span style="color:var(--tx3);font-size:12px">Sin máquinas activas</span>';return;}
+  container.innerHTML=maquinas.map(mq=>`<div class="radio-chip" data-id="${mq.id}" onclick="selMaquina(this)">${mq.nombre}${mq.tipo?' <span style="font-size:10px;opacity:.7">(${mq.tipo})</span>':''}</div>`).join('');
+}
+function selMaquina(el){
+  document.querySelectorAll('#f-maq-chips .radio-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  onCotizadorChange();
+}
+function selRadio(el,group){
+  el.closest('.radio-chips').querySelectorAll('.radio-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function getMaqId(){
+  const sel=document.querySelector('#f-maq-chips .radio-chip.selected');
+  return sel?sel.dataset.id:'';
+}
+function getPago(){
+  const sel=document.querySelector('.radio-chips .radio-chip.selected[data-value]');
+  return sel?sel.dataset.value:'';
 }
 function onMatChange(){ onCotizadorChange(); }
 function onCotizadorChange(){
   const matId=document.getElementById('f-mat-id').value;
-  const maqId=document.getElementById('f-maq-id').value;
+  const maqId=getMaqId();
   const ancho=parseFloat(document.getElementById('f-ancho').value)||0;
   const alto=parseFloat(document.getElementById('f-alto').value)||0;
   const resEl=document.getElementById('cotizador-result');
@@ -786,9 +806,8 @@ function closeModal(w){
     ['f-desc','f-cli','f-tel','f-qty','f-precio','f-sena','f-extra','f-ancho','f-alto','f-cuit'].forEach(id=>{
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
-    document.getElementById('f-pago').value='';
+    document.querySelectorAll('#f-maq-chips .radio-chip, #overlay-nuevo .radio-chip').forEach(c=>c.classList.remove('selected'));
     const ms=document.getElementById('f-mat-id');if(ms)ms.value='';
-    const mq=document.getElementById('f-maq-id');if(mq)mq.value='';
     document.getElementById('cotizador-result').style.display='none';
     document.getElementById('f-total').textContent='$0';
     document.getElementById('f-saldo-calc').textContent='$0';
@@ -843,7 +862,7 @@ async function guardarTarea(){
     detalles,material_id:matId||null,proceso_ids:procs.length?procs:null,
     medidas,ancho_cm:ancho||null,alto_cm:alto||null,
     cantidad:qty,precio_unit:precio,sena,gastos_extra:extra,total,saldo,
-    medio_pago:document.getElementById('f-pago').value,
+    medio_pago:getPago(),
     cuit:document.getElementById('f-cuit').value,
   }).select('*, clientes(nombre,telefono), materiales!trabajos_material_id_fkey(nombre,espesor)').single();
   btn.disabled=false;

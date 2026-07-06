@@ -625,23 +625,27 @@ function renderEgresos(){
 
 function recalcTotal(){
   let totalEgr=0, totalIng=0;
-  EGRESOS_ESTRUCTURA.forEach(g=>{
+  EGRESOS_ESTRUCTURA.forEach((g,gi)=>{
+    let totalCat=0;
     g.conceptos.forEach(c=>{
       const monto=egrData[c]?.monto||0;
       if(INGRESO_CONCEPTOS.includes(c)) totalIng+=monto;
-      else totalEgr+=monto;
+      else { totalEgr+=monto; totalCat+=monto; }
     });
+    // sumar variables de esta categoría
+    egrVarData.filter(v=>v.categoria===g.categoria).forEach(v=>{
+      totalEgr+=(v.monto||0);
+      totalCat+=(v.monto||0);
+    });
+    const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
+    const tc=document.getElementById('egr-total-cat-'+gi);
+    const st=document.getElementById('egr-subtotal-'+gi);
+    if(tc) tc.textContent=fmtCat;
+    if(st) st.textContent=fmtCat;
   });
-  // sumar variables
-  egrVarData.forEach(v=>{totalEgr+=(v.monto||0);});
   const neto=totalEgr-totalIng;
   document.getElementById('egr-total-general').textContent='$'+Math.round(neto).toLocaleString('es-AR');
   document.getElementById('egr-total-ingresos').textContent='$'+Math.round(totalIng).toLocaleString('es-AR');
-  // total variables
-  const totalVar=egrVarData.reduce((a,v)=>a+(v.monto||0),0);
-  const fmtVar=totalVar>0?'$'+Math.round(totalVar).toLocaleString('es-AR'):'—';
-  const el=document.getElementById('egr-total-var');
-  if(el) el.textContent=fmtVar;
 }
 
 function toggleCat(gi){
