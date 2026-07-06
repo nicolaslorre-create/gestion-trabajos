@@ -112,18 +112,18 @@ function renderUserChip() {
     modal.id = 'pass-modal-overlay';
     modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;z-index:600;opacity:0;pointer-events:none;transition:opacity .2s';
     modal.innerHTML = `
-      <div style="background:#fff;border-radius:16px;padding:28px;width:380px;max-width:95vw;transform:translateY(12px);transition:transform .2s">
+      <form autocomplete="off" onsubmit="return false"><div style="background:#fff;border-radius:16px;padding:28px;width:380px;max-width:95vw;transform:translateY(12px);transition:transform .2s">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
           <div style="font-size:16px;font-weight:600">Cambiar contraseña</div>
           <button onclick="cerrarCambioPass()" style="width:28px;height:28px;border-radius:6px;border:1px solid rgba(0,0,0,0.1);background:transparent;cursor:pointer;font-size:15px;color:#6B6B67;display:flex;align-items:center;justify-content:center"><i class="ti ti-x"></i></button>
         </div>
         <div style="margin-bottom:14px">
           <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#A8A8A4;margin-bottom:5px">Nueva contraseña</label>
-          <input type="password" id="new-pass-1" placeholder="mínimo 6 caracteres" style="width:100%;padding:9px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+          <input type="password" id="new-pass-1" placeholder="mínimo 6 caracteres" autocomplete="new-password" style="width:100%;padding:9px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
         </div>
         <div style="margin-bottom:20px">
           <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:#A8A8A4;margin-bottom:5px">Repetir contraseña</label>
-          <input type="password" id="new-pass-2" placeholder="repetí la contraseña" style="width:100%;padding:9px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
+          <input type="password" id="new-pass-2" placeholder="repetí la contraseña" autocomplete="new-password" style="width:100%;padding:9px 12px;border:1px solid rgba(0,0,0,0.12);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;outline:none">
         </div>
         <div id="pass-error" style="background:#FFF0F0;border:1px solid #F5C0C0;border-radius:8px;padding:9px 12px;font-size:12px;color:#C0392B;margin-bottom:14px;display:none"></div>
         <button onclick="guardarCambioPass()" id="btn-cambiar-pass" style="width:100%;padding:11px;background:#E8711A;border:none;border-radius:8px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;color:#fff;cursor:pointer">Guardar contraseña</button>
