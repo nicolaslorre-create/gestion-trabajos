@@ -228,7 +228,7 @@ tbody tr:last-child td{border-bottom:none}
 
   <div class="toolbar">
     <div class="toolbar-left">
-      <div class="search-wrap"><i class="ti ti-search si"></i><input type="text" id="srch" placeholder="Buscar cliente, trabajo, ID..." oninput="renderTabla()"></div>
+      <div class="search-wrap"><i class="ti ti-search si"></i><input type="text" id="srch" placeholder="Buscar cliente, trabajo, ID..." oninput="renderTabla()" autocomplete="off"></div>
       <button class="filt-btn active" id="fb-all" onclick="setF('all',this)"><i class="ti ti-list" style="font-size:13px"></i> Todos</button>
       <button class="filt-btn" id="fb-p" onclick="setF('pendiente',this)"><i class="ti ti-clock" style="font-size:13px"></i> Pendientes</button>
       <button class="filt-btn" id="fb-c" onclick="setF('completado',this)"><i class="ti ti-check" style="font-size:13px"></i> Completados</button>
@@ -442,7 +442,7 @@ tbody tr:last-child td{border-bottom:none}
 <script>
 // sb, currentUser, can() vienen de auth.js
 
-let tareas=[],clientes=[],materiales=[],procesos=[],maquinas=[],filtro='all',pagoTareaId=null,editTareaId=null,bsheetId=null;
+let tareas=[],clientes=[],materiales=[],procesos=[],maquinas=[],filtro='all',pagoTareaId=null,editTareaId=null,bsheetId=null,cotizacionUSD=1000;
 
 function fmt(n){if(n==null||isNaN(n))return'—';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtFecha(iso){if(!iso)return'—';const d=new Date(iso);return String(d.getDate()).padStart(2,'0')+'/'+String(d.getMonth()+1).padStart(2,'0');}
@@ -468,17 +468,19 @@ function resetProcesos(){ document.querySelectorAll('.proc-chip').forEach(c=>c.c
 
 // ── DATOS ─────────────────────────────────────────────
 async function cargarTodo(){
-  const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4},{data:mq,error:e5}]=await Promise.all([
+  const [{data:t,error:e1},{data:c,error:e2},{data:m,error:e3},{data:p,error:e4},{data:mq,error:e5},cfg]=await Promise.all([
     sb.from('trabajos').select('*, clientes(nombre,telefono), materiales!trabajos_material_id_fkey(nombre,espesor)').eq('archivado',false).order('fecha',{ascending:false}),
     sb.from('clientes').select('id,nombre,telefono,cuit').order('nombre'),
     sb.from('materiales').select('*').eq('activo',true).order('categoria').order('nombre').order('espesor'),
     sb.from('procesos').select('*').eq('activo',true).order('orden'),
-    sb.from('maquinas').select('*').eq('activo',true).order('nombre')
+    sb.from('maquinas').select('*').eq('activo',true).order('nombre'),
+    sb.from('config').select('cotizacion_usd').eq('id',1).single()
   ]);
   if(e1){showToast('Error trabajos: '+e1.message,true);return;}
   if(e3){showToast('Error materiales: '+e3.message,true);}
   if(e4){showToast('Error procesos: '+e4.message,true);}
   tareas=t||[];clientes=c||[];materiales=m||[];procesos=p||[];maquinas=mq||[];
+  cotizacionUSD=cfg?.data?.cotizacion_usd||1000;
   renderTabla();updateStats();renderProcChips();
 }
 
@@ -743,7 +745,7 @@ function populateMaqSelect(){
   const container=document.getElementById('f-maq-chips');
   if(!container) return;
   if(!maquinas.length){container.innerHTML='<span style="color:var(--tx3);font-size:12px">Sin máquinas activas</span>';return;}
-  container.innerHTML=maquinas.map(mq=>`<div class="radio-chip" data-id="${mq.id}" onclick="selMaquina(this)">${mq.nombre}${mq.tipo?' <span style="font-size:10px;opacity:.7">(${mq.tipo})</span>':''}</div>`).join('');
+  container.innerHTML=maquinas.map(mq=>`<div class="radio-chip" data-id="${mq.id}" onclick="selMaquina(this)">${mq.nombre}${mq.tipo?' ('+mq.tipo+')':''}</div>`).join('');
 }
 function selMaquina(el){
   document.querySelectorAll('#f-maq-chips .radio-chip').forEach(c=>c.classList.remove('selected'));
@@ -776,8 +778,10 @@ function onCotizadorChange(){
   const area=ancho*alto;
   // Costo material por cm²
   const areaPlaca=(mat.ancho_cm||0)*(mat.alto_cm||0);
-  const precioCm2=areaPlaca>0?(mat.precio_costo||0)/areaPlaca:0;
+  const precioCostoReal=mat.precio_costo_usd>0?Math.round(mat.precio_costo_usd*cotizacionUSD):(mat.precio_costo||0);
+  const precioCm2=areaPlaca>0?precioCostoReal/areaPlaca:0;
   const costoMat=precioCm2*area;
+  const costoMatDisplay=costoMat;
   // Costo máquina por hora → por cm²
   const costoCons=maq.vida_util_horas>0?(maq.costo_consumible||0)/maq.vida_util_horas:0;
   const costoElec=(maq.consumo_kwh||0)*(maq.precio_kwh||0);
