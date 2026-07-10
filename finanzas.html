@@ -251,7 +251,21 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <button onclick="cambiarMes(-1)"><i class="ti ti-chevron-left"></i></button>
       <div class="egr-mes-label" id="egr-mes-label">—</div>
       <button onclick="cambiarMes(1)"><i class="ti ti-chevron-right"></i></button>
-      <div class="egr-total-badge">Neto: <span id="egr-total-general">$0</span> &nbsp;·&nbsp; <span style="color:var(--gnt);font-weight:600">Ingresos: <span id="egr-total-ingresos">$0</span></span></div>
+    </div>
+    <!-- RESUMEN SUPERIOR -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+      <div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:var(--r);padding:12px 16px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#B91C1C;margin-bottom:4px">Total Egresos</div>
+        <div id="egr-total-egresos" style="font-size:20px;font-weight:700;color:#B91C1C">$0</div>
+      </div>
+      <div style="background:var(--gnl);border:1px solid #AADDA0;border-radius:var(--r);padding:12px 16px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gnt);margin-bottom:4px">Ingresos (Alquileres)</div>
+        <div id="egr-total-ingresos" style="font-size:20px;font-weight:700;color:var(--gnt)">$0</div>
+      </div>
+      <div id="egr-neto-card" style="border-radius:var(--r);padding:12px 16px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Neto</div>
+        <div id="egr-total-general" style="font-size:20px;font-weight:700">$0</div>
+      </div>
     </div>
     <!-- FORMULARIO GASTO VARIABLE -->
     <div style="background:var(--surface);border:1px solid var(--bd);border-radius:var(--rl);padding:14px 16px;margin-bottom:16px">
@@ -632,7 +646,6 @@ function recalcTotal(){
       if(INGRESO_CONCEPTOS.includes(c)) totalIng+=monto;
       else { totalEgr+=monto; totalCat+=monto; }
     });
-    // sumar variables de esta categoría
     egrVarData.filter(v=>v.categoria===g.categoria).forEach(v=>{
       totalEgr+=(v.monto||0);
       totalCat+=(v.monto||0);
@@ -644,8 +657,17 @@ function recalcTotal(){
     if(st) st.textContent=fmtCat;
   });
   const neto=totalEgr-totalIng;
-  document.getElementById('egr-total-general').textContent='$'+Math.round(neto).toLocaleString('es-AR');
+  const positivo=neto<=0;
+  document.getElementById('egr-total-egresos').textContent='$'+Math.round(totalEgr).toLocaleString('es-AR');
   document.getElementById('egr-total-ingresos').textContent='$'+Math.round(totalIng).toLocaleString('es-AR');
+  document.getElementById('egr-total-general').textContent=(positivo?'+':'')+('$'+Math.round(Math.abs(neto)).toLocaleString('es-AR'));
+  document.getElementById('egr-total-general').style.color=positivo?'var(--gnt)':'#B91C1C';
+  const card=document.getElementById('egr-neto-card');
+  if(card){
+    card.style.background=positivo?'var(--gnl)':'#FEF2F2';
+    card.style.border='1px solid '+(positivo?'#AADDA0':'#FCA5A5');
+    card.querySelector('div').style.color=positivo?'var(--gnt)':'#B91C1C';
+  }
 }
 
 function toggleCat(gi){
