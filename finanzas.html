@@ -253,7 +253,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <button onclick="cambiarMes(1)"><i class="ti ti-chevron-right"></i></button>
     </div>
     <!-- RESUMEN SUPERIOR -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:16px">
       <div style="background:#FEF2F2;border:1px solid #FCA5A5;border-radius:var(--r);padding:12px 16px">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:#B91C1C;margin-bottom:4px">Total Egresos</div>
         <div id="egr-total-egresos" style="font-size:20px;font-weight:700;color:#B91C1C">$0</div>
@@ -261,6 +261,10 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
       <div style="background:var(--gnl);border:1px solid #AADDA0;border-radius:var(--r);padding:12px 16px">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gnt);margin-bottom:4px">Ingresos (Alquileres)</div>
         <div id="egr-total-ingresos" style="font-size:20px;font-weight:700;color:var(--gnt)">$0</div>
+      </div>
+      <div style="background:var(--gnl);border:1px solid #AADDA0;border-radius:var(--r);padding:12px 16px">
+        <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--gnt);margin-bottom:4px">Ingresos Laser Bahía</div>
+        <div id="egr-cobrado-lb" style="font-size:20px;font-weight:700;color:var(--gnt)">$0</div>
       </div>
       <div id="egr-neto-card" style="border-radius:var(--r);padding:12px 16px">
         <div style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px">Neto</div>
@@ -301,7 +305,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 let todos=[], periodo='mes', balanceEgrData={}, balanceVarData=[];
 
 function fmt(n){if(!n||isNaN(n))return'$0';return'$'+Math.round(n).toLocaleString('es-AR');}
-function fmtK(n){if(!n||isNaN(n))return'$0';if(n>=1000000)return'$'+(n/1000000).toFixed(1)+'M';if(n>=1000)return'$'+(n/1000).toFixed(0)+'k';return'$'+Math.round(n);}
+function fmtK(n){if(!n||isNaN(n))return'$0';return'$'+Math.round(n).toLocaleString('es-AR');}
 
 function getPeriodoRange(){
   const now=new Date();
@@ -630,7 +634,11 @@ function renderEgresos(){
     varsDeCat.forEach(function(v){
       html+='<div class="egr-row" id="egr-var-row-'+v.id+'" style="background:#FAFAF5"><div style="display:flex;align-items:center;gap:8px;flex:1"><span style="font-size:10px;background:var(--orl);color:var(--ort);padding:1px 6px;border-radius:10px;font-weight:600;white-space:nowrap">VARIABLE</span><input type="text" value="'+( v.descripcion||'')+'" placeholder="Descripción..." style="flex:1;padding:4px 8px;border:1px solid var(--bd);border-radius:6px;font-family:DM Sans,sans-serif;font-size:12px;outline:none" onchange="actualizarVarDesc(this,\''+v.id+'\')"></div><div class="egr-input-wrap" style="margin-left:10px"><span>$</span><input class="egr-input" type="number" min="0" value="'+( v.monto>0?v.monto:'')+'" placeholder="0" onchange="actualizarVarMonto(this,\''+v.id+'\','+gi+')" onfocus="this.select()"></div><button onclick="eliminarVar(\''+v.id+'\','+gi+')" style="margin-left:8px;width:24px;height:24px;border:1px solid #F5C0C0;border-radius:6px;background:transparent;cursor:pointer;color:#C0392B;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0"><i class="ti ti-x"></i></button></div>';
     });
-    html+='<div class="egr-total-row"><span>Total '+grupo.categoria+'</span><span id="egr-subtotal-'+gi+'">'+fmtCat+'</span></div></div></div>';
+    // Fila especial de ingresos para Laser Bahía
+    if(grupo.categoria==='Laser Bahía'){
+      html+='<div class="egr-row" style="background:#F0FDF4"><div class="egr-concepto" style="color:var(--gnt);font-weight:600">Cobrado del mes (trabajos) <span style="font-size:10px;background:#DCFCE7;color:var(--gnt);padding:1px 6px;border-radius:10px;margin-left:6px;font-weight:600">INGRESO</span></div><div class="egr-input-wrap"><span style="color:var(--gnt);font-weight:600">$</span><span id="egr-ingreso-lb" style="font-size:13px;font-weight:600;color:var(--gnt);padding:5px 8px">$0</span></div></div>';
+    }
+    html+='<div class="egr-total-row"><span>Total '+grupo.categoria+'</span><span id="egr-subtotal-'+gi+'">—</span></div></div></div>';
   });
   document.getElementById('egr-contenido').innerHTML=html;
   recalcTotal();
@@ -638,6 +646,14 @@ function renderEgresos(){
 
 
 function recalcTotal(){
+  // Cobrado Laser Bahía = trabajos cerrados saldo=0 del mes actual
+  const now=new Date();
+  const cobradoLB=todos.filter(t=>{
+    if(t.estado!=='cerrado'||(t.saldo||0)>0)return false;
+    const d=new Date(t.fecha);
+    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+  }).reduce((a,t)=>a+(t.total||0),0);
+
   let totalEgr=0, totalIng=0;
   EGRESOS_ESTRUCTURA.forEach((g,gi)=>{
     let totalCat=0;
@@ -650,16 +666,23 @@ function recalcTotal(){
       totalEgr+=(v.monto||0);
       totalCat+=(v.monto||0);
     });
+    // Para Laser Bahía sumar cobrado como ingreso de categoría
+    if(g.categoria==='Laser Bahía') totalCat+=cobradoLB;
     const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
     const tc=document.getElementById('egr-total-cat-'+gi);
     const st=document.getElementById('egr-subtotal-'+gi);
     if(tc) tc.textContent=fmtCat;
     if(st) st.textContent=fmtCat;
+    // Actualizar fila de ingresos dentro del acordeón
+    const lbEl=document.getElementById('egr-ingreso-lb');
+    if(lbEl) lbEl.textContent='$'+Math.round(cobradoLB).toLocaleString('es-AR');
   });
-  const neto=totalEgr-totalIng;
+  const totalIngTotal=totalIng+cobradoLB;
+  const neto=totalEgr-totalIngTotal;
   const positivo=neto<=0;
   document.getElementById('egr-total-egresos').textContent='$'+Math.round(totalEgr).toLocaleString('es-AR');
   document.getElementById('egr-total-ingresos').textContent='$'+Math.round(totalIng).toLocaleString('es-AR');
+  document.getElementById('egr-cobrado-lb').textContent='$'+Math.round(cobradoLB).toLocaleString('es-AR');
   document.getElementById('egr-total-general').textContent=(positivo?'+':'')+('$'+Math.round(Math.abs(neto)).toLocaleString('es-AR'));
   document.getElementById('egr-total-general').style.color=positivo?'var(--gnt)':'#B91C1C';
   const card=document.getElementById('egr-neto-card');
