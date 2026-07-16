@@ -305,9 +305,13 @@ tbody tr:last-child td{border-bottom:none}
         <div style="display:flex;flex-direction:column;gap:12px">
           <div>
             <label>Material</label>
-            <select id="f-mat-id" onchange="onMatChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none">
+            <select id="f-mat-nombre" onchange="onMatNombreChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;margin-bottom:6px">
               <option value="">— Seleccionar —</option>
             </select>
+            <select id="f-mat-espesor" onchange="onMatEspesorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;display:none">
+              <option value="">— Espesor —</option>
+            </select>
+            <input type="hidden" id="f-mat-id">
           </div>
           <div>
             <label>Máquina</label>
@@ -723,23 +727,54 @@ function openModal(w){
   if(w==='nuevo'){ populateMatSelect(); populateMaqSelect(); }
 }
 function populateMatSelect(){
-  const sel=document.getElementById('f-mat-id');
+  const sel=document.getElementById('f-mat-nombre');
   if(!sel||!materiales.length) return;
-  const cats=[...new Set(materiales.map(m=>m.categoria).filter(Boolean))];
+  const seen=new Set();
+  const cats={};
+  materiales.filter(m=>m.activo).forEach(m=>{
+    if(!cats[m.categoria])cats[m.categoria]=[];
+    if(!seen.has(m.nombre)){seen.add(m.nombre);cats[m.categoria].push(m.nombre);}
+  });
   sel.innerHTML='<option value="">— Seleccionar —</option>';
-  cats.forEach(cat=>{
+  Object.entries(cats).forEach(([cat,nombres])=>{
     const grp=document.createElement('optgroup');
     grp.label=cat;
-    materiales.filter(m=>m.categoria===cat).forEach(m=>{
+    nombres.forEach(nombre=>{
       const opt=document.createElement('option');
-      opt.value=m.id;
-      opt.dataset.nombre=m.nombre;
-      opt.dataset.espesor=m.espesor||'';
-      opt.textContent=m.nombre+(m.espesor?' — '+m.espesor:'');
+      opt.value=nombre; opt.textContent=nombre;
       grp.appendChild(opt);
     });
     sel.appendChild(grp);
   });
+  document.getElementById('f-mat-espesor').style.display='none';
+  document.getElementById('f-mat-id').value='';
+}
+function onMatNombreChange(){
+  const nombre=document.getElementById('f-mat-nombre').value;
+  const espSel=document.getElementById('f-mat-espesor');
+  const matIdEl=document.getElementById('f-mat-id');
+  if(!nombre){espSel.style.display='none';matIdEl.value='';onCotizadorChange();return;}
+  const matches=materiales.filter(m=>m.nombre===nombre&&m.activo);
+  const conEspesor=matches.filter(m=>m.espesor&&m.espesor.trim()!==''&&m.espesor!=='0');
+  if(conEspesor.length>1){
+    espSel.innerHTML='<option value="">— Espesor —</option>';
+    conEspesor.forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m.id; opt.textContent=m.espesor;
+      espSel.appendChild(opt);
+    });
+    espSel.style.display='block';
+    matIdEl.value='';
+  } else {
+    espSel.style.display='none';
+    matIdEl.value=matches[0]?.id||''
+  }
+  onCotizadorChange();
+}
+function onMatEspesorChange(){
+  const id=document.getElementById('f-mat-espesor').value;
+  document.getElementById('f-mat-id').value=id;
+  onCotizadorChange();
 }
 function populateMaqSelect(){
   const container=document.getElementById('f-maq-chips');
@@ -764,7 +799,7 @@ function getPago(){
   const sel=document.querySelector('.radio-chips .radio-chip.selected[data-value]');
   return sel?sel.dataset.value:'';
 }
-function onMatChange(){ onCotizadorChange(); }
+function onMatChange(){ onCotizadorChange(); } // legacy
 function onCotizadorChange(){
   const matId=document.getElementById('f-mat-id').value;
   const maqId=getMaqId();
@@ -811,7 +846,9 @@ function closeModal(w){
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
     document.querySelectorAll('#f-maq-chips .radio-chip, #overlay-nuevo .radio-chip').forEach(c=>c.classList.remove('selected'));
-    const ms=document.getElementById('f-mat-id');if(ms)ms.value='';
+    const mn=document.getElementById('f-mat-nombre');if(mn)mn.value='';
+    const me=document.getElementById('f-mat-espesor');if(me){me.style.display='none';me.value='';}
+    const mi=document.getElementById('f-mat-id');if(mi)mi.value='';
     document.getElementById('cotizador-result').style.display='none';
     document.getElementById('f-total').textContent='$0';
     document.getElementById('f-saldo-calc').textContent='$0';
