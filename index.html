@@ -759,24 +759,19 @@ function populateMatSelect(){
     sel.appendChild(grp);
   });
 
-  // Productos (tipo=producto)
+  // Productos (tipo=producto) — alfabético sin submenús
   if(prodSel){
     const prods=materiales.filter(m=>m.activo&&m.tipo==='producto');
-    const seenP=new Set(), catsP={};
+    const seenP=new Set(), nombresP=[];
     prods.forEach(m=>{
-      if(!catsP[m.categoria])catsP[m.categoria]=[];
-      if(!seenP.has(m.nombre)){seenP.add(m.nombre);catsP[m.categoria].push(m.nombre);}
+      if(!seenP.has(m.nombre)){seenP.add(m.nombre);nombresP.push(m.nombre);}
     });
+    nombresP.sort();
     prodSel.innerHTML='<option value="">— Seleccionar —</option>';
-    Object.entries(catsP).forEach(([cat,nombres])=>{
-      const grp=document.createElement('optgroup');
-      grp.label=cat;
-      nombres.forEach(nombre=>{
-        const opt=document.createElement('option');
-        opt.value=nombre; opt.textContent=nombre;
-        grp.appendChild(opt);
-      });
-      prodSel.appendChild(grp);
+    nombresP.forEach(nombre=>{
+      const opt=document.createElement('option');
+      opt.value=nombre; opt.textContent=nombre;
+      prodSel.appendChild(opt);
     });
   }
 

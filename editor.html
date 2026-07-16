@@ -244,14 +244,14 @@ tbody tr:hover td{background:var(--s2)}
       <button class="modal-close" onclick="closeModal('mat')"><i class="ti ti-x"></i></button>
     </div>
     <div class="fg">
-      <div class="ff"><label>Nombre</label><input type="text" id="mat-nombre" placeholder="Acero 304, Acrilico, Mates..."></div>
-      <div>
+      <div class="ff">
         <label>Tipo</label>
-        <select id="mat-tipo">
-          <option value="material">Material (placa/lámina)</option>
-          <option value="producto">Producto (objeto terminado)</option>
+        <select id="mat-tipo" style="font-weight:500">
+          <option value="material">📐 Material (placa/lámina con espesor)</option>
+          <option value="producto">📦 Producto (objeto terminado: termo, copa, etc.)</option>
         </select>
       </div>
+      <div class="ff"><label>Nombre</label><input type="text" id="mat-nombre" placeholder="Acero 304, Acrilico, Mates..."></div>
       <div><label>Espesor</label><input type="text" id="mat-espesor" placeholder="4mm, 1.5mm..."></div>
       <div>
         <label>Categoría</label>
