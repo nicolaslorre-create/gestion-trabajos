@@ -308,10 +308,19 @@ tbody tr:last-child td{border-bottom:none}
             <select id="f-mat-nombre" onchange="onMatNombreChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;margin-bottom:6px">
               <option value="">— Seleccionar —</option>
             </select>
-            <select id="f-mat-espesor" onchange="onMatEspesorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;display:none">
+            <select id="f-mat-espesor" onchange="onMatEspesorChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;display:none;margin-bottom:6px">
               <option value="">— Espesor —</option>
             </select>
             <input type="hidden" id="f-mat-id">
+          </div>
+          <div>
+            <label>Producto</label>
+            <select id="f-prod-nombre" onchange="onProdChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;margin-bottom:6px">
+              <option value="">— Seleccionar —</option>
+            </select>
+            <select id="f-prod-variante" onchange="onProdVarianteChange()" style="width:100%;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--r);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--tx);background:var(--surface);outline:none;display:none">
+              <option value="">— Variante —</option>
+            </select>
           </div>
           <div>
             <label>Máquina</label>
@@ -728,10 +737,13 @@ function openModal(w){
 }
 function populateMatSelect(){
   const sel=document.getElementById('f-mat-nombre');
+  const prodSel=document.getElementById('f-prod-nombre');
   if(!sel||!materiales.length) return;
-  const seen=new Set();
-  const cats={};
-  materiales.filter(m=>m.activo).forEach(m=>{
+
+  // Materiales (tipo=material)
+  const mats=materiales.filter(m=>m.activo&&m.tipo==='material');
+  const seen=new Set(), cats={};
+  mats.forEach(m=>{
     if(!cats[m.categoria])cats[m.categoria]=[];
     if(!seen.has(m.nombre)){seen.add(m.nombre);cats[m.categoria].push(m.nombre);}
   });
@@ -746,15 +758,48 @@ function populateMatSelect(){
     });
     sel.appendChild(grp);
   });
+
+  // Productos (tipo=producto)
+  if(prodSel){
+    const prods=materiales.filter(m=>m.activo&&m.tipo==='producto');
+    const seenP=new Set(), catsP={};
+    prods.forEach(m=>{
+      if(!catsP[m.categoria])catsP[m.categoria]=[];
+      if(!seenP.has(m.nombre)){seenP.add(m.nombre);catsP[m.categoria].push(m.nombre);}
+    });
+    prodSel.innerHTML='<option value="">— Seleccionar —</option>';
+    Object.entries(catsP).forEach(([cat,nombres])=>{
+      const grp=document.createElement('optgroup');
+      grp.label=cat;
+      nombres.forEach(nombre=>{
+        const opt=document.createElement('option');
+        opt.value=nombre; opt.textContent=nombre;
+        grp.appendChild(opt);
+      });
+      prodSel.appendChild(grp);
+    });
+  }
+
   document.getElementById('f-mat-espesor').style.display='none';
   document.getElementById('f-mat-id').value='';
 }
+
 function onMatNombreChange(){
   const nombre=document.getElementById('f-mat-nombre').value;
   const espSel=document.getElementById('f-mat-espesor');
   const matIdEl=document.getElementById('f-mat-id');
+  const prodSel=document.getElementById('f-prod-nombre');
+  const varSel=document.getElementById('f-prod-variante');
+  // Deshabilitar producto si hay material seleccionado
+  if(nombre){
+    if(prodSel){prodSel.disabled=true;prodSel.value='';}
+    if(varSel){varSel.style.display='none';varSel.disabled=true;}
+  } else {
+    if(prodSel) prodSel.disabled=false;
+    if(varSel) varSel.disabled=false;
+  }
   if(!nombre){espSel.style.display='none';matIdEl.value='';onCotizadorChange();return;}
-  const matches=materiales.filter(m=>m.nombre===nombre&&m.activo);
+  const matches=materiales.filter(m=>m.nombre===nombre&&m.activo&&m.tipo==='material');
   const conEspesor=matches.filter(m=>m.espesor&&m.espesor.trim()!==''&&m.espesor!=='0');
   if(conEspesor.length>1){
     espSel.innerHTML='<option value="">— Espesor —</option>';
@@ -767,15 +812,52 @@ function onMatNombreChange(){
     matIdEl.value='';
   } else {
     espSel.style.display='none';
-    matIdEl.value=matches[0]?.id||''
+    matIdEl.value=matches[0]?.id||'';
   }
   onCotizadorChange();
 }
+
 function onMatEspesorChange(){
-  const id=document.getElementById('f-mat-espesor').value;
-  document.getElementById('f-mat-id').value=id;
+  document.getElementById('f-mat-id').value=document.getElementById('f-mat-espesor').value;
   onCotizadorChange();
 }
+
+function onProdChange(){
+  const nombre=document.getElementById('f-prod-nombre').value;
+  const varSel=document.getElementById('f-prod-variante');
+  const matIdEl=document.getElementById('f-mat-id');
+  const matSel=document.getElementById('f-mat-nombre');
+  const espSel=document.getElementById('f-mat-espesor');
+  if(nombre){
+    matSel.disabled=true; matSel.value='';
+    espSel.style.display='none'; espSel.disabled=true;
+  } else {
+    matSel.disabled=false; espSel.disabled=false;
+  }
+  if(!nombre){varSel.style.display='none';matIdEl.value='';onCotizadorChange();return;}
+  const matches=materiales.filter(m=>m.nombre===nombre&&m.activo&&m.tipo==='producto');
+  const conVariante=matches.filter(m=>m.espesor&&m.espesor.trim()!=='');
+  if(conVariante.length>1){
+    varSel.innerHTML='<option value="">— Variante —</option>';
+    conVariante.forEach(m=>{
+      const opt=document.createElement('option');
+      opt.value=m.id; opt.textContent=m.espesor;
+      varSel.appendChild(opt);
+    });
+    varSel.style.display='block';
+    matIdEl.value='';
+  } else {
+    varSel.style.display='none';
+    matIdEl.value=matches[0]?.id||'';
+  }
+  onCotizadorChange();
+}
+
+function onProdVarianteChange(){
+  document.getElementById('f-mat-id').value=document.getElementById('f-prod-variante').value;
+  onCotizadorChange();
+}
+
 function populateMaqSelect(){
   const container=document.getElementById('f-maq-chips');
   if(!container) return;
@@ -846,9 +928,11 @@ function closeModal(w){
       const el=document.getElementById(id);if(el){el.value=id==='f-qty'?'1':'';delete el.dataset.clienteId;}
     });
     document.querySelectorAll('#f-maq-chips .radio-chip, #overlay-nuevo .radio-chip').forEach(c=>c.classList.remove('selected'));
-    const mn=document.getElementById('f-mat-nombre');if(mn)mn.value='';
-    const me=document.getElementById('f-mat-espesor');if(me){me.style.display='none';me.value='';}
+    const mn=document.getElementById('f-mat-nombre');if(mn){mn.value='';mn.disabled=false;}
+    const me=document.getElementById('f-mat-espesor');if(me){me.style.display='none';me.value='';me.disabled=false;}
     const mi=document.getElementById('f-mat-id');if(mi)mi.value='';
+    const pn=document.getElementById('f-prod-nombre');if(pn){pn.value='';pn.disabled=false;}
+    const pv=document.getElementById('f-prod-variante');if(pv){pv.style.display='none';pv.value='';pv.disabled=false;}
     document.getElementById('cotizador-result').style.display='none';
     document.getElementById('f-total').textContent='$0';
     document.getElementById('f-saldo-calc').textContent='$0';

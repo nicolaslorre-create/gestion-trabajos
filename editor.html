@@ -245,6 +245,13 @@ tbody tr:hover td{background:var(--s2)}
     </div>
     <div class="fg">
       <div class="ff"><label>Nombre</label><input type="text" id="mat-nombre" placeholder="Acero 304, Acrilico, Mates..."></div>
+      <div>
+        <label>Tipo</label>
+        <select id="mat-tipo">
+          <option value="material">Material (placa/lámina)</option>
+          <option value="producto">Producto (objeto terminado)</option>
+        </select>
+      </div>
       <div><label>Espesor</label><input type="text" id="mat-espesor" placeholder="4mm, 1.5mm..."></div>
       <div>
         <label>Categoría</label>
@@ -475,6 +482,7 @@ function openMaterial(id){
   const m=id?materiales.find(x=>x.id===id):null;
   document.getElementById('mat-modal-title').textContent=m?'Editar Material':'Nuevo Material';
   document.getElementById('mat-nombre').value=m?m.nombre||'':'';
+  document.getElementById('mat-tipo').value=m?m.tipo||'material':'material';
   document.getElementById('mat-espesor').value=m?m.espesor||'':'';
   document.getElementById('mat-categoria').value=m?m.categoria||'Metal':'Metal';
   document.getElementById('mat-ancho').value=m?m.ancho_cm||'':'';
@@ -538,6 +546,7 @@ async function guardarMaterial(){
   if(!nombre){showToast('Ingresá un nombre',true);return;}
   const payload={
     nombre:nombre,
+    tipo:document.getElementById('mat-tipo').value,
     espesor:document.getElementById('mat-espesor').value.trim(),
     categoria:document.getElementById('mat-categoria').value,
     ancho_cm:parseFloat(document.getElementById('mat-ancho').value)||0,
