@@ -964,13 +964,11 @@ async function guardarTarea(){
   const ancho=parseFloat(document.getElementById('f-ancho').value)||0;
   const alto=parseFloat(document.getElementById('f-alto').value)||0;
   const medidas=ancho&&alto?`${ancho}x${alto}cm`:'';
-  // Construir detalles: material + procesos
-  const sel=document.getElementById('f-mat-id');
-  const opt=sel?sel.options[sel.selectedIndex]:null;
-  const matNombre=opt&&opt.value?(opt.dataset.nombre+(opt.dataset.espesor?' '+opt.dataset.espesor:'')):'';
+  const matId=document.getElementById('f-mat-id')?.value||null;
+  const matObj=matId?materiales.find(m=>m.id===matId):null;
+  const matNombre=matObj?(matObj.nombre+(matObj.espesor?' '+matObj.espesor:'')):'';
   const procs=getProcesos();
   const detalles=[matNombre,...procs].filter(Boolean).join(', ');
-  const matId=opt?.value||null;
   let clienteId=document.getElementById('f-cli').dataset.clienteId;
   if(!clienteId){
     const {data:cE}=await sb.from('clientes').select('id').ilike('nombre',cli).limit(1).single();
