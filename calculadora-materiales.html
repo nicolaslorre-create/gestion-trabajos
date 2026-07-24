@@ -9,12 +9,13 @@
     --bg: #f4f5f7;
     --card: #ffffff;
     --primary: #2563eb;
-    --primary-dark: #1d4ed8;
     --text: #1f2937;
     --muted: #6b7280;
     --border: #e5e7eb;
     --success-bg: #ecfdf5;
     --success-border: #10b981;
+    --warn-bg: #fffbeb;
+    --warn-border: #f59e0b;
   }
   * { box-sizing: border-box; }
   body {
@@ -70,26 +71,25 @@
   }
   .checkbox-row input { width: auto; margin: 0; }
   .checkbox-row label { margin: 0; }
-  button {
-    width: 100%;
-    padding: 12px;
-    background: var(--primary);
-    color: white;
-    border: none;
+
+  .warn-box {
+    display: none;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-border);
     border-radius: 8px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 0.85rem;
   }
-  button:active { background: var(--primary-dark); }
-  button:disabled { background: #9ca3af; cursor: not-allowed; }
+  .warn-box.visible { display: block; }
+
   .result {
     display: none;
     background: var(--success-bg);
     border: 1px solid var(--success-border);
     border-radius: 10px;
     padding: 16px;
-    margin-top: 16px;
+    margin-top: 4px;
   }
   .result.visible { display: block; }
   .result-row {
@@ -108,7 +108,13 @@
   .muted-small {
     font-size: 0.78rem;
     color: var(--muted);
-    margin-top: 4px;
+    margin-top: 8px;
+  }
+  .placeholder-msg {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9rem;
+    padding: 12px 0;
   }
   .error {
     color: #dc2626;
@@ -139,7 +145,7 @@
   <h1>Calculadora de Materiales</h1>
 
   <div class="card">
-    <label for="material">Material (placa)</label>
+    <label for="material">Material</label>
     <select id="material"></select>
 
     <div class="row">
@@ -163,9 +169,15 @@
       <input type="number" id="ganancia" min="0" step="1" placeholder="0">
     </div>
 
+    <div class="warn-box" id="warnSinCosto">
+      Este material no tiene costo cargado en el sistema. Ingresá el costo de la placa completa para poder calcular:
+      <label for="costoManual" style="margin-top:10px;">Costo de la placa completa (ARS)</label>
+      <input type="number" id="costoManual" min="0" step="1" placeholder="0">
+    </div>
+
     <div class="error" id="errorMsg"></div>
 
-    <button id="calcularBtn">Calcular</button>
+    <div id="placeholderMsg" class="placeholder-msg">Seleccioná un material y las medidas para ver el resultado.</div>
 
     <div class="result" id="resultado">
       <div class="result-row">
@@ -203,8 +215,7 @@
 <script type="module">
   // ==== CONFIG: reusar las mismas constantes que index.html / auth.js ====
   const SUPABASE_URL = "https://kjexzywygtzuxtzlberb.supabase.co";
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
-; // <-- completar
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI";
   // =========================================================================
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -257,18 +268,18 @@
       .order("nombre", { ascending: true });
 
     if (error) {
-      document.getElementById("errorMsg").textContent =
-        "Error cargando materiales: " + error.message;
-      document.getElementById("errorMsg").classList.add("visible");
+      const errorMsg = document.getElementById("errorMsg");
+      errorMsg.textContent = "Error cargando materiales: " + error.message;
+      errorMsg.classList.add("visible");
       return;
     }
 
     materiales = data || [];
     const select = document.getElementById("material");
-    select.innerHTML = "";
+    select.innerHTML = "<option value=''>Seleccionar...</option>";
 
     if (materiales.length === 0) {
-      select.innerHTML = "<option value=''>No hay materiales con medidas cargadas</option>";
+      select.innerHTML = "<option value=''>No hay materiales activos cargados</option>";
       return;
     }
 
@@ -281,11 +292,21 @@
     });
   }
 
+  // Devuelve el costo de la placa completa en ARS, o null si no hay dato en la DB
+  // y tampoco se cargó un valor manual.
   function costoPlacaArs(material) {
     if (material.precio_costo_usd !== null && material.precio_costo_usd !== undefined) {
       return Number(material.precio_costo_usd) * cotizacionUSD;
     }
-    return Number(material.precio_costo) || 0;
+    if (material.precio_costo !== null && material.precio_costo !== undefined) {
+      return Number(material.precio_costo);
+    }
+    const manualInput = document.getElementById("costoManual");
+    const manualVal = parseFloat(manualInput.value);
+    if (!isNaN(manualVal) && manualVal > 0) {
+      return manualVal;
+    }
+    return null;
   }
 
   function formatArs(n) {
@@ -293,6 +314,13 @@
   }
   function formatUsd(n) {
     return "USD " + n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  }
+
+  function ocultarResultado(mensajePlaceholder) {
+    document.getElementById("resultado").classList.remove("visible");
+    const ph = document.getElementById("placeholderMsg");
+    ph.textContent = mensajePlaceholder || "Seleccioná un material y las medidas para ver el resultado.";
+    ph.style.display = "block";
   }
 
   function calcular() {
@@ -305,28 +333,46 @@
     const usarGanancia = document.getElementById("usarGanancia").checked;
     const ganancia = parseFloat(document.getElementById("ganancia").value) || 0;
 
+    document.getElementById("warnSinCosto").classList.remove("visible");
+
     if (!materialId) {
-      errorMsg.textContent = "Seleccioná un material.";
-      errorMsg.classList.add("visible");
-      return;
-    }
-    if (!ancho || !alto || ancho <= 0 || alto <= 0) {
-      errorMsg.textContent = "Ingresá ancho y alto válidos.";
-      errorMsg.classList.add("visible");
+      ocultarResultado("Seleccioná un material y las medidas para ver el resultado.");
       return;
     }
 
     const material = materiales.find((m) => String(m.id) === String(materialId));
-    if (!material) return;
-
-    const areaPlaca = material.ancho_cm * material.alto_cm;
-    if (!areaPlaca || areaPlaca <= 0) {
-      errorMsg.textContent = "El material seleccionado no tiene medidas válidas.";
-      errorMsg.classList.add("visible");
+    if (!material) {
+      ocultarResultado();
       return;
     }
 
+    const areaPlaca = material.ancho_cm * material.alto_cm;
+    if (!areaPlaca || areaPlaca <= 0) {
+      errorMsg.textContent = "El material seleccionado no tiene medidas válidas en la base.";
+      errorMsg.classList.add("visible");
+      ocultarResultado(" ");
+      return;
+    }
+
+    const tieneCostoDB = (material.precio_costo_usd !== null && material.precio_costo_usd !== undefined) ||
+                          (material.precio_costo !== null && material.precio_costo !== undefined);
+
+    if (!tieneCostoDB) {
+      document.getElementById("warnSinCosto").classList.add("visible");
+    }
+
     const costoPlaca = costoPlacaArs(material);
+
+    if (costoPlaca === null) {
+      ocultarResultado("Ingresá el costo de la placa para calcular.");
+      return;
+    }
+
+    if (!ancho || !alto || ancho <= 0 || alto <= 0) {
+      ocultarResultado("Ingresá ancho y alto para ver el resultado.");
+      return;
+    }
+
     const costoPorCm2 = costoPlaca / areaPlaca;
     const areaDeseada = ancho * alto;
     const costoMaterial = costoPorCm2 * areaDeseada;
@@ -356,14 +402,21 @@
       ? formatUsd(total / cotizacionUSD)
       : "-";
 
+    document.getElementById("placeholderMsg").style.display = "none";
     document.getElementById("resultado").classList.add("visible");
   }
 
   document.getElementById("usarGanancia").addEventListener("change", (e) => {
     document.getElementById("gananciaWrap").style.display = e.target.checked ? "block" : "none";
+    calcular();
   });
 
-  document.getElementById("calcularBtn").addEventListener("click", calcular);
+  // Recálculo en vivo: cualquier cambio en estos campos dispara el cálculo,
+  // sin necesidad de botón.
+  ["material", "ancho", "alto", "ganancia", "costoManual"].forEach((id) => {
+    document.getElementById(id).addEventListener("input", calcular);
+  });
+  document.getElementById("material").addEventListener("change", calcular);
 
   (async function init() {
     const perfil = await checkAuthAndRole();
