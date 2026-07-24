@@ -169,6 +169,20 @@
       <input type="number" id="ganancia" min="0" step="1" placeholder="0">
     </div>
 
+    <div class="warn-box" id="warnSinMedidas">
+      Este material no tiene medidas de placa cargadas en el sistema. Ingresalas para poder calcular:
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label for="anchoPlacaManual">Ancho placa (cm)</label>
+          <input type="number" id="anchoPlacaManual" min="0" step="0.1" placeholder="0">
+        </div>
+        <div>
+          <label for="altoPlacaManual">Alto placa (cm)</label>
+          <input type="number" id="altoPlacaManual" min="0" step="0.1" placeholder="0">
+        </div>
+      </div>
+    </div>
+
     <div class="warn-box" id="warnSinCosto">
       Este material no tiene costo cargado en el sistema. Ingresá el costo de la placa completa para poder calcular:
       <label for="costoManual" style="margin-top:10px;">Costo de la placa completa (ARS)</label>
@@ -183,6 +197,10 @@
       <div class="result-row">
         <span>Área desperdicio (kerf)</span>
         <span>no contemplado</span>
+      </div>
+      <div class="result-row">
+        <span>Placa usada</span>
+        <span id="rPlacaMedidas">-</span>
       </div>
       <div class="result-row">
         <span>Costo por cm²</span>
@@ -217,6 +235,7 @@
   const SUPABASE_URL = "https://kjexzywygtzuxtzlberb.supabase.co";
   const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI";
   // =========================================================================
+
 
   const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -292,19 +311,37 @@
     });
   }
 
-  // Devuelve el costo de la placa completa en ARS, o null si no hay dato en la DB
-  // y tampoco se cargó un valor manual.
+  // Devuelve el costo de la placa completa en ARS, o null si no hay dato válido en la DB
+  // (tratamos 0 como "sin cargar", no como precio real) y tampoco se cargó un valor manual.
   function costoPlacaArs(material) {
-    if (material.precio_costo_usd !== null && material.precio_costo_usd !== undefined) {
-      return Number(material.precio_costo_usd) * cotizacionUSD;
+    const usd = Number(material.precio_costo_usd);
+    if (!isNaN(usd) && usd > 0) {
+      return usd * cotizacionUSD;
     }
-    if (material.precio_costo !== null && material.precio_costo !== undefined) {
-      return Number(material.precio_costo);
+    const ars = Number(material.precio_costo);
+    if (!isNaN(ars) && ars > 0) {
+      return ars;
     }
     const manualInput = document.getElementById("costoManual");
     const manualVal = parseFloat(manualInput.value);
     if (!isNaN(manualVal) && manualVal > 0) {
       return manualVal;
+    }
+    return null;
+  }
+
+  // Devuelve { ancho, alto } de la placa en cm, o null si no hay dato válido en la DB
+  // (0 cuenta como "sin cargar") y tampoco se completó a mano.
+  function medidasPlaca(material) {
+    const anchoDB = Number(material.ancho_cm);
+    const altoDB = Number(material.alto_cm);
+    if (!isNaN(anchoDB) && anchoDB > 0 && !isNaN(altoDB) && altoDB > 0) {
+      return { ancho: anchoDB, alto: altoDB };
+    }
+    const anchoManual = parseFloat(document.getElementById("anchoPlacaManual").value);
+    const altoManual = parseFloat(document.getElementById("altoPlacaManual").value);
+    if (!isNaN(anchoManual) && anchoManual > 0 && !isNaN(altoManual) && altoManual > 0) {
+      return { ancho: anchoManual, alto: altoManual };
     }
     return null;
   }
@@ -334,6 +371,7 @@
     const ganancia = parseFloat(document.getElementById("ganancia").value) || 0;
 
     document.getElementById("warnSinCosto").classList.remove("visible");
+    document.getElementById("warnSinMedidas").classList.remove("visible");
 
     if (!materialId) {
       ocultarResultado("Seleccioná un material y las medidas para ver el resultado.");
@@ -346,23 +384,29 @@
       return;
     }
 
-    const areaPlaca = material.ancho_cm * material.alto_cm;
-    if (!areaPlaca || areaPlaca <= 0) {
-      errorMsg.textContent = "El material seleccionado no tiene medidas válidas en la base.";
-      errorMsg.classList.add("visible");
-      ocultarResultado(" ");
-      return;
+    const anchoDB = Number(material.ancho_cm);
+    const altoDB = Number(material.alto_cm);
+    const tieneMedidasDB = !isNaN(anchoDB) && anchoDB > 0 && !isNaN(altoDB) && altoDB > 0;
+    if (!tieneMedidasDB) {
+      document.getElementById("warnSinMedidas").classList.add("visible");
     }
 
-    const tieneCostoDB = (material.precio_costo_usd !== null && material.precio_costo_usd !== undefined) ||
-                          (material.precio_costo !== null && material.precio_costo !== undefined);
-
+    const usdDB = Number(material.precio_costo_usd);
+    const arsDB = Number(material.precio_costo);
+    const tieneCostoDB = (!isNaN(usdDB) && usdDB > 0) || (!isNaN(arsDB) && arsDB > 0);
     if (!tieneCostoDB) {
       document.getElementById("warnSinCosto").classList.add("visible");
     }
 
-    const costoPlaca = costoPlacaArs(material);
+    const medidas = medidasPlaca(material);
+    if (medidas === null) {
+      ocultarResultado("Ingresá las medidas de la placa para calcular.");
+      return;
+    }
 
+    const areaPlaca = medidas.ancho * medidas.alto;
+
+    const costoPlaca = costoPlacaArs(material);
     if (costoPlaca === null) {
       ocultarResultado("Ingresá el costo de la placa para calcular.");
       return;
@@ -385,6 +429,7 @@
       total = costoMaterial + montoGanancia;
     }
 
+    document.getElementById("rPlacaMedidas").textContent = `${medidas.ancho}x${medidas.alto}cm`;
     document.getElementById("rCostoCm2").textContent = formatArs(costoPorCm2) + " /cm²";
     document.getElementById("rArea").textContent = areaDeseada.toLocaleString("es-AR") + " cm²";
     document.getElementById("rCostoArs").textContent = formatArs(costoMaterial);
@@ -413,7 +458,7 @@
 
   // Recálculo en vivo: cualquier cambio en estos campos dispara el cálculo,
   // sin necesidad de botón.
-  ["material", "ancho", "alto", "ganancia", "costoManual"].forEach((id) => {
+  ["material", "ancho", "alto", "ganancia", "costoManual", "anchoPlacaManual", "altoPlacaManual"].forEach((id) => {
     document.getElementById(id).addEventListener("input", calcular);
   });
   document.getElementById("material").addEventListener("change", calcular);
