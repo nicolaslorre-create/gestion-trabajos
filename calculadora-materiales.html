@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Materiales</title>
+<style>
+  :root {
+    --bg: #f4f5f7;
+    --card: #ffffff;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --success-bg: #ecfdf5;
+    --success-border: #10b981;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+  }
+  .container { max-width: 480px; margin: 0 auto; }
+  h1 {
+    font-size: 1.25rem;
+    margin: 8px 0 20px;
+    text-align: center;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  select, input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 1rem;
+    margin-bottom: 16px;
+    background: #fff;
+  }
+  select:focus, input:focus {
+    outline: none;
+    border-color: var(--primary);
+  }
+  .row {
+    display: flex;
+    gap: 12px;
+  }
+  .row > div { flex: 1; }
+  .checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .checkbox-row input { width: auto; margin: 0; }
+  .checkbox-row label { margin: 0; }
+  button {
+    width: 100%;
+    padding: 12px;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:active { background: var(--primary-dark); }
+  button:disabled { background: #9ca3af; cursor: not-allowed; }
+  .result {
+    display: none;
+    background: var(--success-bg);
+    border: 1px solid var(--success-border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 16px;
+  }
+  .result.visible { display: block; }
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.95rem;
+  }
+  .result-row.total {
+    font-weight: 700;
+    font-size: 1.15rem;
+    border-top: 1px solid var(--success-border);
+    margin-top: 8px;
+    padding-top: 10px;
+  }
+  .muted-small {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .error {
+    color: #dc2626;
+    font-size: 0.85rem;
+    margin-top: -8px;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .error.visible { display: block; }
+  #loadingScreen {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--muted);
+  }
+  .disclaimer {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 12px;
+  }
+</style>
+</head>
+<body>
+
+<div id="loadingScreen">Cargando...</div>
+
+<div class="container" id="mainApp" style="display:none;">
+  <h1>Calculadora de Materiales</h1>
+
+  <div class="card">
+    <label for="material">Material (placa)</label>
+    <select id="material"></select>
+
+    <div class="row">
+      <div>
+        <label for="ancho">Ancho deseado (cm)</label>
+        <input type="number" id="ancho" min="0" step="0.1" placeholder="0">
+      </div>
+      <div>
+        <label for="alto">Alto deseado (cm)</label>
+        <input type="number" id="alto" min="0" step="0.1" placeholder="0">
+      </div>
+    </div>
+
+    <div class="checkbox-row">
+      <input type="checkbox" id="usarGanancia">
+      <label for="usarGanancia">Agregar % de ganancia</label>
+    </div>
+
+    <div id="gananciaWrap" style="display:none;">
+      <label for="ganancia">Ganancia (%)</label>
+      <input type="number" id="ganancia" min="0" step="1" placeholder="0">
+    </div>
+
+    <div class="error" id="errorMsg"></div>
+
+    <button id="calcularBtn">Calcular</button>
+
+    <div class="result" id="resultado">
+      <div class="result-row">
+        <span>Área desperdicio (kerf)</span>
+        <span>no contemplado</span>
+      </div>
+      <div class="result-row">
+        <span>Costo por cm²</span>
+        <span id="rCostoCm2">-</span>
+      </div>
+      <div class="result-row">
+        <span>Área a cortar</span>
+        <span id="rArea">-</span>
+      </div>
+      <div class="result-row">
+        <span>Costo material (ARS)</span>
+        <span id="rCostoArs">-</span>
+      </div>
+      <div class="result-row" id="rGananciaRow" style="display:none;">
+        <span>Ganancia aplicada</span>
+        <span id="rGanancia">-</span>
+      </div>
+      <div class="result-row total">
+        <span>Total</span>
+        <span id="rTotal">-</span>
+      </div>
+      <div class="muted-small">Referencia USD: <span id="rUsd">-</span></div>
+    </div>
+  </div>
+
+  <div class="disclaimer">Cálculo sin kerf (desperdicio de corte). Uso interno.</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module">
+  // ==== CONFIG: reusar las mismas constantes que index.html / auth.js ====
+  const SUPABASE_URL = "https://kjexzywygtzuxtzlberb.supabase.co";
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImtqZXh6eXd5Z3R6dXh0emxiZXJiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzYwNDIsImV4cCI6MjA5NjIxMjA0Mn0.lCzyRGTG-yXMUIM5MeBuR_VPGvCuVQYRUp8R1QibxiI';
+; // <-- completar
+  // =========================================================================
+
+  const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  let cotizacionUSD = 1;
+  let materiales = [];
+
+  async function checkAuthAndRole() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      window.location.href = "login.html";
+      return null;
+    }
+    const { data: perfil, error } = await supabase
+      .from("perfiles")
+      .select("rol")
+      .eq("id", session.user.id)
+      .single();
+
+    if (error || !perfil) {
+      window.location.href = "login.html";
+      return null;
+    }
+
+    if (!["propietario", "administrador"].includes(perfil.rol)) {
+      document.getElementById("loadingScreen").textContent =
+        "No tenés permiso para acceder a esta herramienta.";
+      return null;
+    }
+    return perfil;
+  }
+
+  async function loadConfig() {
+    const { data, error } = await supabase
+      .from("config")
+      .select("cotizacion_usd")
+      .single();
+    if (!error && data && data.cotizacion_usd) {
+      cotizacionUSD = Number(data.cotizacion_usd);
+    }
+  }
+
+  async function loadMateriales() {
+    // tipo='material' excluye productos terminados; activo=true excluye materiales dados de baja
+    const { data, error } = await supabase
+      .from("materiales")
+      .select("id, nombre, espesor, ancho_cm, alto_cm, precio_costo_usd, precio_costo, tipo, activo")
+      .eq("tipo", "material")
+      .eq("activo", true)
+      .order("nombre", { ascending: true });
+
+    if (error) {
+      document.getElementById("errorMsg").textContent =
+        "Error cargando materiales: " + error.message;
+      document.getElementById("errorMsg").classList.add("visible");
+      return;
+    }
+
+    materiales = data || [];
+    const select = document.getElementById("material");
+    select.innerHTML = "";
+
+    if (materiales.length === 0) {
+      select.innerHTML = "<option value=''>No hay materiales con medidas cargadas</option>";
+      return;
+    }
+
+    materiales.forEach((m) => {
+      const opt = document.createElement("option");
+      opt.value = m.id;
+      const espesorTxt = m.espesor ? ` ${m.espesor}mm` : "";
+      opt.textContent = `${m.nombre}${espesorTxt} (${m.ancho_cm}x${m.alto_cm}cm)`;
+      select.appendChild(opt);
+    });
+  }
+
+  function costoPlacaArs(material) {
+    if (material.precio_costo_usd !== null && material.precio_costo_usd !== undefined) {
+      return Number(material.precio_costo_usd) * cotizacionUSD;
+    }
+    return Number(material.precio_costo) || 0;
+  }
+
+  function formatArs(n) {
+    return "$" + n.toLocaleString("es-AR", { maximumFractionDigits: 2 });
+  }
+  function formatUsd(n) {
+    return "USD " + n.toLocaleString("en-US", { maximumFractionDigits: 2 });
+  }
+
+  function calcular() {
+    const errorMsg = document.getElementById("errorMsg");
+    errorMsg.classList.remove("visible");
+
+    const materialId = document.getElementById("material").value;
+    const ancho = parseFloat(document.getElementById("ancho").value);
+    const alto = parseFloat(document.getElementById("alto").value);
+    const usarGanancia = document.getElementById("usarGanancia").checked;
+    const ganancia = parseFloat(document.getElementById("ganancia").value) || 0;
+
+    if (!materialId) {
+      errorMsg.textContent = "Seleccioná un material.";
+      errorMsg.classList.add("visible");
+      return;
+    }
+    if (!ancho || !alto || ancho <= 0 || alto <= 0) {
+      errorMsg.textContent = "Ingresá ancho y alto válidos.";
+      errorMsg.classList.add("visible");
+      return;
+    }
+
+    const material = materiales.find((m) => String(m.id) === String(materialId));
+    if (!material) return;
+
+    const areaPlaca = material.ancho_cm * material.alto_cm;
+    if (!areaPlaca || areaPlaca <= 0) {
+      errorMsg.textContent = "El material seleccionado no tiene medidas válidas.";
+      errorMsg.classList.add("visible");
+      return;
+    }
+
+    const costoPlaca = costoPlacaArs(material);
+    const costoPorCm2 = costoPlaca / areaPlaca;
+    const areaDeseada = ancho * alto;
+    const costoMaterial = costoPorCm2 * areaDeseada;
+
+    let total = costoMaterial;
+    let montoGanancia = 0;
+
+    if (usarGanancia && ganancia > 0) {
+      montoGanancia = costoMaterial * (ganancia / 100);
+      total = costoMaterial + montoGanancia;
+    }
+
+    document.getElementById("rCostoCm2").textContent = formatArs(costoPorCm2) + " /cm²";
+    document.getElementById("rArea").textContent = areaDeseada.toLocaleString("es-AR") + " cm²";
+    document.getElementById("rCostoArs").textContent = formatArs(costoMaterial);
+
+    const gananciaRow = document.getElementById("rGananciaRow");
+    if (usarGanancia && ganancia > 0) {
+      gananciaRow.style.display = "flex";
+      document.getElementById("rGanancia").textContent = `${ganancia}% (${formatArs(montoGanancia)})`;
+    } else {
+      gananciaRow.style.display = "none";
+    }
+
+    document.getElementById("rTotal").textContent = formatArs(total);
+    document.getElementById("rUsd").textContent = cotizacionUSD
+      ? formatUsd(total / cotizacionUSD)
+      : "-";
+
+    document.getElementById("resultado").classList.add("visible");
+  }
+
+  document.getElementById("usarGanancia").addEventListener("change", (e) => {
+    document.getElementById("gananciaWrap").style.display = e.target.checked ? "block" : "none";
+  });
+
+  document.getElementById("calcularBtn").addEventListener("click", calcular);
+
+  (async function init() {
+    const perfil = await checkAuthAndRole();
+    if (!perfil) return;
+
+    await loadConfig();
+    await loadMateriales();
+
+    document.getElementById("loadingScreen").style.display = "none";
+    document.getElementById("mainApp").style.display = "block";
+  })();
+</script>
+</body>
+</html>
