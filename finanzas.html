@@ -646,12 +646,12 @@ function renderEgresos(){
 
 
 function recalcTotal(){
-  // Cobrado Laser Bahía = trabajos cerrados saldo=0 del mes actual
-  const now=new Date();
+  // Cobrado Laser Bahía = trabajos cerrados saldo=0 del mes que se está visualizando (egrMes/egrAnio),
+  // no del mes calendario actual.
   const cobradoLB=todos.filter(t=>{
     if(t.estado!=='cerrado'||(t.saldo||0)>0)return false;
     const d=new Date(t.fecha);
-    return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();
+    return d.getMonth()===(egrMes-1)&&d.getFullYear()===egrAnio;
   }).reduce((a,t)=>a+(t.total||0),0);
 
   let totalEgr=0, totalIng=0;
