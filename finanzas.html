@@ -302,7 +302,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);min-h
 <script>
 // sb viene de auth.js
 
-let todos=[], periodo='mes', balanceEgrData={}, balanceVarData=[];
+let todos=[], pagos=[], periodo='mes', balanceEgrData={}, balanceVarData=[];
 
 function fmt(n){if(!n||isNaN(n))return'$0';return'$'+Math.round(n).toLocaleString('es-AR');}
 function fmtK(n){if(!n||isNaN(n))return'$0';return'$'+Math.round(n).toLocaleString('es-AR');}
@@ -338,13 +338,16 @@ function setPeriodo(p,btn){
 async function cargar(){
   const now=new Date();
   const mes=now.getMonth()+1, anio=now.getFullYear();
-  const [{data:t,error},{data:egr},{data:vars}]=await Promise.all([
+  const [{data:t,error},{data:pg,error:errorPg},{data:egr},{data:vars}]=await Promise.all([
     sb.from('trabajos').select('*, clientes(nombre), materiales!trabajos_material_id_fkey(nombre)').eq('archivado',false),
+    sb.from('pagos').select('*'),
     sb.from('egresos').select('*').eq('mes',mes).eq('anio',anio),
     sb.from('egresos_variables').select('*').eq('mes',mes).eq('anio',anio)
   ]);
   if(error){document.body.innerHTML='<p style="padding:24px;color:red">Error: '+error.message+'</p>';return;}
+  if(errorPg)console.error('Error cargando pagos:',errorPg.message);
   todos=t||[];
+  pagos=pg||[];
   balanceEgrData={};
   (egr||[]).forEach(e=>{balanceEgrData[e.concepto]=e;});
   balanceVarData=vars||[];
@@ -365,8 +368,9 @@ function renderAll(){
 // ── KPIs ──────────────────────────────────────────────
 function renderKPIs(){
   const enPeriodo=todos.filter(t=>inPeriodo(t.fecha));
-  const cobrados=enPeriodo.filter(t=>t.estado==='cerrado'&&t.saldo<=0);
-  const cobrado=cobrados.reduce((a,t)=>a+(t.total||0),0);
+  const pagosPeriodo=pagos.filter(p=>inPeriodo(p.fecha));
+  const cobrado=pagosPeriodo.reduce((a,p)=>a+(p.monto||0),0);
+  const trabajosCobradosSet=new Set(pagosPeriodo.map(p=>p.trabajo_id));
   const saldoArr=todos.filter(t=>t.estado==='cerrado'&&t.saldo>0);
   const saldo=saldoArr.reduce((a,t)=>a+(t.saldo||0),0);
   const procesoArr=todos.filter(t=>t.estado==='pendiente'||t.estado==='completado');
@@ -374,7 +378,7 @@ function renderKPIs(){
   const totalPeriodo=enPeriodo.reduce((a,t)=>a+(t.total||0),0);
 
   document.getElementById('kpi-cobrado').textContent=fmtK(cobrado);
-  document.getElementById('kpi-cobrado-sub').textContent=cobrados.length+' trabajos cobrados';
+  document.getElementById('kpi-cobrado-sub').textContent=trabajosCobradosSet.size+' trabajos con pagos';
   document.getElementById('kpi-saldo').textContent=fmtK(saldo);
   document.getElementById('kpi-saldo-sub').textContent=saldoArr.length+' clientes con deuda';
   document.getElementById('kpi-proceso').textContent=fmtK(proceso);
@@ -386,12 +390,12 @@ function renderKPIs(){
 // ── MES A MES ─────────────────────────────────────────
 function renderMesAMes(){
   const meses={};
-  todos.filter(t=>t.estado==='cerrado'&&t.saldo<=0).forEach(t=>{
-    const d=new Date(t.fecha);
+  pagos.forEach(p=>{
+    const d=new Date(p.fecha);
     const key=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    if(!meses[key])meses[key]={label:d.toLocaleString('es-AR',{month:'short',year:'numeric'}),total:0,count:0};
-    meses[key].total+=(t.total||0);
-    meses[key].count++;
+    if(!meses[key])meses[key]={label:d.toLocaleString('es-AR',{month:'short',year:'numeric'}),total:0,trabajoIds:new Set()};
+    meses[key].total+=(p.monto||0);
+    meses[key].trabajoIds.add(p.trabajo_id);
   });
   const sorted=Object.keys(meses).sort().slice(-8).reverse();
   if(!sorted.length){document.getElementById('mes-content').innerHTML='<div class="empty-state">Sin datos</div>';return;}
@@ -404,7 +408,7 @@ function renderMesAMes(){
       const pct=Math.round((m.total-prev.total)/prev.total*100);
       delta=pct>=0?`<span class="delta-up">↑ ${pct}%</span>`:`<span class="delta-dn">↓ ${Math.abs(pct)}%</span>`;
     }
-    html+=`<tr><td style="font-weight:500">${m.label}</td><td>${fmt(m.total)}</td><td style="color:var(--tx2)">${m.count}</td><td>${delta}</td></tr>`;
+    html+=`<tr><td style="font-weight:500">${m.label}</td><td>${fmt(m.total)}</td><td style="color:var(--tx2)">${m.trabajoIds.size}</td><td>${delta}</td></tr>`;
   });
   html+='</tbody></table>';
   document.getElementById('mes-content').innerHTML=html;
@@ -646,13 +650,12 @@ function renderEgresos(){
 
 
 function recalcTotal(){
-  // Cobrado Laser Bahía = trabajos cerrados saldo=0 del mes que se está visualizando (egrMes/egrAnio),
+  // Cobrado Laser Bahía = pagos del ledger recibidos en el mes que se está visualizando (egrMes/egrAnio),
   // no del mes calendario actual.
-  const cobradoLB=todos.filter(t=>{
-    if(t.estado!=='cerrado'||(t.saldo||0)>0)return false;
-    const d=new Date(t.fecha);
+  const cobradoLB=pagos.filter(p=>{
+    const d=new Date(p.fecha);
     return d.getMonth()===(egrMes-1)&&d.getFullYear()===egrAnio;
-  }).reduce((a,t)=>a+(t.total||0),0);
+  }).reduce((a,p)=>a+(p.monto||0),0);
 
   let totalEgr=0, totalIng=0;
   EGRESOS_ESTRUCTURA.forEach((g,gi)=>{
@@ -741,14 +744,13 @@ function renderBalance(){
   const MESES_LABEL=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
   document.getElementById('balance-mes-label').textContent=MESES_LABEL[now.getMonth()]+' '+now.getFullYear();
 
-  // Ingresos: trabajos cobrados este mes
+  // Ingresos: pagos recibidos este mes (ledger), independiente del estado del trabajo
   const mesActual=now.getMonth(), anioActual=now.getFullYear();
-  const cobradosMes=todos.filter(t=>{
-    if(t.estado!=='cerrado'||(t.saldo||0)>0) return false;
-    const d=new Date(t.fecha);
+  const pagosMes=pagos.filter(p=>{
+    const d=new Date(p.fecha);
     return d.getMonth()===mesActual&&d.getFullYear()===anioActual;
   });
-  const totalCobrado=cobradosMes.reduce((a,t)=>a+(t.total||0),0);
+  const totalCobrado=pagosMes.reduce((a,p)=>a+(p.monto||0),0);
 
   // Ingresos: alquileres del mes
   const totalAlq=(balanceEgrData['Alquileres']?.monto||0);
