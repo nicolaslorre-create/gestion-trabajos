@@ -16,15 +16,15 @@ let currentUser = null;  // { id, email, nombre, rol }
 const PERMISOS = {
   propietario: {
     crear: true, completar: true, mensajeria: true,
-    editor: true, finanzas: true, usuarios: true
+    editor: true, finanzas: true, usuarios: true, calculadora: true
   },
   administrador: {
     crear: true, completar: true, mensajeria: true,
-    editor: true, finanzas: false, usuarios: false
+    editor: true, finanzas: false, usuarios: false, calculadora: true
   },
   operador: {
     crear: true, completar: false, mensajeria: false,
-    editor: false, finanzas: false, usuarios: false
+    editor: false, finanzas: false, usuarios: false, calculadora: true
   }
 };
 
@@ -190,8 +190,10 @@ function applyRoleUI() {
   // Botones de nav que requieren permiso
   const finBtn = document.getElementById('nav-finanzas');
   const edBtn  = document.getElementById('nav-editor');
+  const calcBtn = document.getElementById('nav-calculadora');
   if (finBtn) finBtn.style.display = can('finanzas') ? '' : 'none';
   if (edBtn)  edBtn.style.display  = can('editor')   ? '' : 'none';
+  if (calcBtn) calcBtn.style.display = can('calculadora') ? '' : 'none';
 
   // Acciones que requieren completar
   if (!can('completar')) {
