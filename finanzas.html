@@ -669,8 +669,9 @@ function recalcTotal(){
       totalEgr+=(v.monto||0);
       totalCat+=(v.monto||0);
     });
-    // Para Laser Bahía sumar cobrado como ingreso de categoría
-    if(g.categoria==='Laser Bahía') totalCat+=cobradoLB;
+    // Nota: el cobrado de Laser Bahía NO se suma acá — se muestra aparte,
+    // en su propia fila ("Cobrado del mes") y en el KPI "Ingresos Laser Bahía".
+    // Este totalCat es puramente gasto, igual que en el resto de las categorías.
     const fmtCat=totalCat>0?'$'+Math.round(totalCat).toLocaleString('es-AR'):'—';
     const tc=document.getElementById('egr-total-cat-'+gi);
     const st=document.getElementById('egr-subtotal-'+gi);
